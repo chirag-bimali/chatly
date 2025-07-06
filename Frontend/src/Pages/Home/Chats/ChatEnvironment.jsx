@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Search from "../../../assets/search.svg?react";
 import ChatWindow from "./ChatsWindow";
 import ContactLists from "./Components/ContactLists";
@@ -8,35 +8,33 @@ import BadRequest from "../../../Exceptions/BadRequest";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import AuthenticationError from "../../../Exceptions/AuthenticationError";
 import NoChatSelection from "./Components/NoChatSelection";
+import SearchList from "./Components/SearchList";
 export default function ChatEnvironment() {
-  const navigate = useNavigate();
-  const { searchUsers, currentContact, contacts } = useContext(APIContext);
+  // only loads contact onetime
+  const { getContacts } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const [searchMode, setSearchMode] = useState(false);
-  const [_, setSearch] = useState("");
-  console.log(currentContact);
-  const { chatId } = useParams();
+  const [contacts, setContacts] = useState();
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    console.log(getToken());
+    (async function () {
+      let temp = await getContacts(1, 10, getToken());
+      console.log(temp);
+      setContacts();
+    })();
+  }, []);
+  console.log(contacts);
 
   async function handleSearch(e) {
-    try {
-      setSearch(e.target.value);
-      setSearchMode(true);
-      const response = await searchUsers(e.target.value, 1, 5, getToken());
-      console.log(response);
-    } catch (e) {
-      if (e instanceof AuthenticationError) {
-        console.log(`AuthenticationError`);
-        navigate("/login");
-      }
-      if (e instanceof BadRequest) {
-        if (e.data.status === 401) {
-          navigate("/login");
-        }
-      }
+    if (!e.target.value) {
+      setSearchMode(false);
+      return;
     }
+    setSearch(e.target.value);
+    setSearchMode(true);
   }
-  const noContacts = contacts.length === 0;
-  const noChatSelection = !chatId;
   return (
     <div className="px-6 py-5 flex justify-between">
       <div className="flex flex-col min-w-80 w-full gap-8 flex-1/5 max-w-1/4">
@@ -52,13 +50,17 @@ export default function ChatEnvironment() {
             />
           </label>
         </div>
-        <div>
-          {!searchMode && <ContactLists />}
-          {searchMode && <ContactLists />}
+        <div className="flex-1">
+          {!searchMode &&  <ContactLists />}
+          {searchMode && (
+            <div className="flex-1 max-h-[512px] overflow-y-auto ">
+              <SearchList search={search} />
+            </div>
+          )}
         </div>
       </div>
       <div className="flex-grow">
-        <ChatWindow noContacts={noContacts} noChatSelection={noChatSelection} />
+        <ChatWindow  />
       </div>
     </div>
   );

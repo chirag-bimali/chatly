@@ -14,29 +14,25 @@ import AuthContext from "../../../../Context/AuthContext";
 import AuthenticationError from "../../../../Exceptions/AuthenticationError";
 
 export default function ContactLists() {
-  /*
-  CONTACT PERSON ID
-  CONTACT PERSON PROFILE PICTURE
-
-  CONTACT PERSON LAST CHAT
-  CONTACT PERSON LAST CHAT TIME
-  */
-  const { loadContacts, contacts } = useContext(APIContext);
+  const { getContacts } = useContext(APIContext);
   const { getToken, getUser } = useContext(AuthContext);
+  const [contacts, setContacts] = useState([]);
   let user = getUser();
   const navigate = useNavigate();
 
   useEffect(() => {
     (async function () {
       try {
-        loadContacts(1, 10, getToken());
+        let c = await getContacts(1, 10000, getToken());
+        console.log(c);
+        setContacts(c);
       } catch (e) {
         if (e instanceof AuthenticationError) {
           navigate("/login");
         }
       }
     })();
-  }, [loadContacts, getToken, navigate]);
+  }, [getContacts, getToken, navigate]);
 
   const [contextMenu, setContextMenu] = useState({
     visible: false, // Should the menu be shown?

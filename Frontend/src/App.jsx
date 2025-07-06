@@ -11,7 +11,7 @@ import AuthProvider from "./Providers/AuthProvider";
 function App() {
   return (
     <AuthProvider>
-      <div className="bg-base overflow-x-scroll h-dvh flex flex-col">
+      <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
         <Router>
           {/* <TopBar showProfile={true} />
           <div className="divider m-0"></div> */}

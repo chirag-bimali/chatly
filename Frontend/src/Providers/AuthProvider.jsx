@@ -6,7 +6,7 @@ import BadRequest from "../Exceptions/BadRequest";
 import ArgumentError from "../Exceptions/ArgumentError";
 import AuthenticationError from "../Exceptions/AuthenticationError";
 import UserNotFound from "../Exceptions/UserNotFound";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 const API_ROUTE = `http://localhost:5280/api/accounts`;
 

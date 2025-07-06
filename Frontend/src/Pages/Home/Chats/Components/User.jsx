@@ -1,31 +1,31 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import DefaultUserProfile from "../../../../assets/default-user-profile.svg";
-import APIContext from "../../../../Context/APIContext";
-export default function Contact({
-  contactName,
-  contactId,
-  lastMessage,
-  lastMessageTime,
-  profileImageUrl,
-}) {
-  let location = useLocation();
-  const isActive = location.pathname === `/chat/${contactId}`;
+export default function User({ userName, userId }) {
+  const lastMessage = "Hello";
+  const lastMessageTime = "10:10";
+  const profileImageUrl = "";
+
+  // lastMessage,
+  // lastMessageTime,
+  // profileImageUrl,
+
+  // check does contact exits
+  // if yes -> route to that chat
+  // if no -> ...
   return (
     <Link
-      to={`/chat/${contactId}`}
-      className={`contact btn border-none dark:shadow-none h-fit w-full px-1 block rounded-xl ${
-        isActive ? " bg-base-200" : " bg-base-100"
-      }`}
+      to={`/chat/draft/${userId}`}
+      className={`contact btn border-none dark:shadow-none h-fit w-full px-1 block rounded-xl `}
     >
       <div className="flex items-start px-2 py-4 justify-between gap-3.5 prose prose-p:font-normal">
         <img
           src={profileImageUrl ? profileImageUrl : DefaultUserProfile}
-          alt={contactName + " profile picture"}
+          alt={userName + " profile picture"}
           className="mb-0 self-center"
         />
         <div className="flex-grow">
           <div className="prose prose-p:text-base prose-p:text-neutral-950 dark:prose-p:text-neutral-50 prose-p:text-left">
-            <p>{contactName ? contactName : "Nobiee Nobiee"}</p>
+            <p>{userName ? userName : "Noobie"}</p>
           </div>
           <div className="prose prose-p:text-sm prose-p:text-neutral-500 prose-p:text-left">
             <p>{lastMessage ? lastMessage : "Message"}</p>

@@ -4,13 +4,11 @@ import APIContext from "../Context/APIContext";
 import NetworkError from "../Exceptions/NetworkError";
 import BadRequest from "../Exceptions/BadRequest";
 import AuthenticationError from "../Exceptions/AuthenticationError";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 let API_ROUTE = "http://localhost:5280/api";
 
 export default function APIProvider({ children }) {
-  const [contacts, setContacts] = useState([]);
-  const [currentContact, setCurrentContact] = useState("");
   async function searchUsers(query = "", page = 1, pageSize = 5, token = "") {
     try {
       let route = `${API_ROUTE}/Users/Search`;
@@ -18,7 +16,7 @@ export default function APIProvider({ children }) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        param: {
+        params: {
           Query: query,
           Page: page,
           PageSize: pageSize,
@@ -37,7 +35,7 @@ export default function APIProvider({ children }) {
       throw e;
     }
   }
-  const loadContacts = useCallback(async function (
+  const getContacts = useCallback(async function (
     page = 1,
     pageSize = 10,
     token = ""
@@ -53,14 +51,21 @@ export default function APIProvider({ children }) {
           PageSize: pageSize,
         },
       });
-      setContacts([...response.data.data]);
+      console.log(response)
+      return response?.data?.data;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
   []);
   return (
-    <APIContext.Provider value={{ searchUsers, loadContacts, contacts, currentContact, setCurrentContact }}>
+    <APIContext.Provider
+      value={{
+        searchUsers,
+        getContacts,
+      }}
+    >
       {children}
     </APIContext.Provider>
   );

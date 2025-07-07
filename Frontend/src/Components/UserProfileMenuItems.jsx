@@ -1,4 +1,4 @@
-export default function MessageContextMenuOption({ icon, label, onClick }) {
+export default function UserProfileMenuItem({ icon, label, onClick }) {
   const Icon = icon;
   return (
     <li

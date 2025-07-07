@@ -8,7 +8,6 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import NotFound from "./Pages/NotFound";
 import AuthProvider from "./Providers/AuthProvider";
 import AppProvider from "./Providers/AppProvider";
-import { useContext } from "react";
 import AppContext from "./Context/AppContext";
 
 function App() {

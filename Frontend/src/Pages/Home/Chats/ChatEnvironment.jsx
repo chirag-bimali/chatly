@@ -5,7 +5,7 @@ import ContactLists from "./Components/ContactLists";
 import APIContext from "../../../Context/APIContext";
 import AuthContext from "../../../Context/AuthContext";
 import BadRequest from "../../../Exceptions/BadRequest";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import AuthenticationError from "../../../Exceptions/AuthenticationError";
 import NoChatSelection from "./Components/NoChatSelection";
 import SearchList from "./Components/SearchList";
@@ -46,7 +46,7 @@ export default function ChatEnvironment() {
           </label>
         </div>
         <div className="flex-1">
-          {!searchMode &&  <ContactLists />}
+          {!searchMode && <ContactLists />}
           {searchMode && (
             <div className="flex-1 max-h-[512px] overflow-y-auto ">
               <SearchList search={search} />
@@ -55,7 +55,7 @@ export default function ChatEnvironment() {
         </div>
       </div>
       <div className="flex-grow">
-        <ChatWindow  />
+        <ChatWindow />
       </div>
     </div>
   );

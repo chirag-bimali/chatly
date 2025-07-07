@@ -4,6 +4,8 @@ import Settings from "./Settings/Settings";
 import NotFound from "../NotFound";
 import APIProvider from "../../Providers/APIProvider";
 import TopBar from "../../Components/TopBar";
+import AppProvider from "../../Providers/AppProvider";
+import AppContext from "../../Context/AppContext";
 
 export default function Home() {
   return (

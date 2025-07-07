@@ -24,7 +24,6 @@ export default function ContactLists() {
     (async function () {
       try {
         let c = await getContacts(1, 10000, getToken());
-        console.log(c);
         setContacts(c);
       } catch (e) {
         if (e instanceof AuthenticationError) {

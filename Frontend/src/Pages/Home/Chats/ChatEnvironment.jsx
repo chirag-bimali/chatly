@@ -14,18 +14,13 @@ export default function ChatEnvironment() {
   const { getContacts } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const [searchMode, setSearchMode] = useState(false);
-  const [contacts, setContacts] = useState();
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    console.log(getToken());
     (async function () {
-      let temp = await getContacts(1, 10, getToken());
-      console.log(temp);
-      setContacts();
+      await getContacts(1, 10, getToken());
     })();
-  }, []);
-  console.log(contacts);
+  }, [getContacts, getToken]);
 
   async function handleSearch(e) {
     if (!e.target.value) {

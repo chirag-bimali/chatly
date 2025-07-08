@@ -1,12 +1,4 @@
-export default function InputField({
-  legend,
-  placeholder,
-  message,
-  onChange,
-  type,
-  required,
-  value,
-}) {
+export default function InputField({ legend, placeholder, message }) {
   return (
     <fieldset className="fieldset w-fit prose prose-p:m-0">
       <div>
@@ -16,12 +8,9 @@ export default function InputField({
         </legend>
       </div>
       <input
-        type={type}
+        type="text"
         className="input input-content input-lg rounded-xl text-base bg-transparent dark:text-content w-80"
         placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e)}
-        required={required}
       />
     </fieldset>
   );

@@ -6,25 +6,20 @@ import Home from "./Pages/Home/Home";
 import TopBar from "./Components/TopBar";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import NotFound from "./Pages/NotFound";
-import AuthProvider from "./Providers/AuthProvider";
-import AppProvider from "./Providers/AppProvider";
-import AppContext from "./Context/AppContext";
 
 function App() {
   return (
-    <AppProvider>
-      <AuthProvider>
-        <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
-          <Router>
-            <Routes>
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="*" element={<Home />} />
-            </Routes>
-          </Router>
-        </div>
-      </AuthProvider>
-    </AppProvider>
+    <div className="bg-base overflow-x-scroll">
+      <Router>
+        <TopBar />
+        <div className="divider m-0"></div>
+        <Routes>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </Router>
+    </div>
   );
 }
 

@@ -1,18 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
 import DefaultUserProfile from "../../../../assets/default-user-profile.svg";
-import APIContext from "../../../../Context/APIContext";
 export default function Contact({
   contactName,
-  contactId,
   lastMessage,
   lastMessageTime,
   profileImageUrl,
+  isActive,
 }) {
-  let location = useLocation();
-  const isActive = location.pathname === `/chat/${contactId}`;
   return (
-    <Link
-      to={`/chat/${contactId}`}
+    <button
       className={`contact btn border-none dark:shadow-none h-fit w-full px-1 block rounded-xl ${
         isActive ? " bg-base-200" : " bg-base-100"
       }`}
@@ -37,6 +32,6 @@ export default function Contact({
           </div>
         </div>
       </div>
-    </Link>
+    </button>
   );
 }

@@ -90,10 +90,8 @@ public class ContactRepository : IContactRepository
             {
                 Id = Guid.NewGuid().ToString(),
                 ContactId = contactUser.Id,
-                ContactUser = contactUser,
                 UserId = currUser.Id,
-                User = currUser,
-                Status = ContactStatus.None,
+                Status = ContactStatus.Pending,
                 CreatedAt = DateTime.Now,
                 ChatDeleted = false,
                 Mutated = false,
@@ -180,7 +178,7 @@ public class ContactRepository : IContactRepository
         }
 
         Contact? contact = null;
-        contact = await _dbContext.Contacts.Include(c => c.User).Include(c => c.ContactUser).FirstOrDefaultAsync(c => c.Id == contactId);
+        contact = await _dbContext.Contacts.FirstOrDefaultAsync(c => c.Id == contactId);
 
 
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserId))
@@ -254,7 +252,7 @@ public class ContactRepository : IContactRepository
             }
 
             var contactsCounts = await queryable.CountAsync();
-            queryable = queryable.Include(c => c.User).Include(c => c.ContactUser).Skip((page - 1) * pageSize).Take(pageSize);
+            queryable = queryable.Skip((page - 1) * pageSize).Take(pageSize);
             var contacts = await queryable.ToListAsync();
 
 

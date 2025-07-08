@@ -3,7 +3,7 @@ import Logo from "../assets/logo.svg?react";
 import DefaultUserProfile from "../assets/default-user-profile.svg?react";
 import SettingsIcon from "../assets/settings-icon.svg?react";
 import LogoutIcon from "../assets/logout-icon.svg?react";
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect } from "react";
 import AppContext from "../Context/AppContext";
 import UserProfileMenu from "./UserProfileMenu";
 
@@ -14,7 +14,6 @@ export default function TopBar({ showProfile }) {
     x: 0, // X position on screen
     y: 0, // Y position on screen
   });
-  const profileBtnRef = useRef(null);
   useEffect(() => {
     if (!globalContextMenu) {
       setContextMenu({
@@ -24,7 +23,6 @@ export default function TopBar({ showProfile }) {
       });
     }
   }, [globalContextMenu]);
-
 
   return (
     <div className="w-full bg-base py-3 px-10 flex justify-between">
@@ -46,7 +44,7 @@ export default function TopBar({ showProfile }) {
           if (e.target.closest("#profile-btn") !== null) {
             setContextMenu({
               visible: true,
-              x: Math.min(window.innerWidth - profileBtnRef.right, 0),
+              x: e.clientX,
               y: e.clientY,
             });
             setGlobalContextMenu(true);
@@ -55,9 +53,7 @@ export default function TopBar({ showProfile }) {
         }}
       >
         <DefaultUserProfile className={showProfile ? "block" : "hidden"} />
-        <ul className="text-sm w-fit">
-          <UserProfileMenu contextMenu={contextMenu} />
-        </ul>
+        <UserProfileMenu contextMenu={contextMenu} />
       </div>
     </div>
   );

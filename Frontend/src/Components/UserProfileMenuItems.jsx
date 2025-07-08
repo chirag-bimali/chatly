@@ -6,7 +6,7 @@ export default function UserProfileMenuItem({ icon, label, onClick }) {
       onClick={onClick}
     >
       <span className="px-4 py-3 flex items-center justify-center">
-        {<Icon className="h-4 w-4" />}
+        {<Icon className="h-4 w-4 fill-base-content" />}
       </span>
       <p>{label}</p>
     </li>

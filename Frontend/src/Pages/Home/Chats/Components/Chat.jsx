@@ -38,15 +38,15 @@ export default function Chat({ isLeft, imgSrc, name, message }) {
       <div
         className="chat-bubble"
         onContextMenu={(e) => {
-          e.preventDefault();
           if (globalContextMenu) {
             setGlobalContextMenu(false);
             return;
           }
           if (e.target.closest(".chat-bubble") !== null) {
+            e.preventDefault();
             setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
             setGlobalContextMenu(true);
-            e.stopPropagation()
+            e.stopPropagation();
           }
         }}
       >

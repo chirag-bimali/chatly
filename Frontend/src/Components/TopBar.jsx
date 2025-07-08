@@ -3,7 +3,7 @@ import Logo from "../assets/logo.svg?react";
 import DefaultUserProfile from "../assets/default-user-profile.svg?react";
 import SettingsIcon from "../assets/settings-icon.svg?react";
 import LogoutIcon from "../assets/logout-icon.svg?react";
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect } from "react";
 import AppContext from "../Context/AppContext";
 import UserProfileMenu from "./UserProfileMenu";
 

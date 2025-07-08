@@ -51,7 +51,6 @@ export default function APIProvider({ children }) {
           PageSize: pageSize,
         },
       });
-      console.log(response)
       return response?.data?.data;
     } catch (e) {
       console.error(e);

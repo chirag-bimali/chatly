@@ -5,7 +5,7 @@ import ContactLists from "./Components/ContactLists";
 import APIContext from "../../../Context/APIContext";
 import AuthContext from "../../../Context/AuthContext";
 import BadRequest from "../../../Exceptions/BadRequest";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import AuthenticationError from "../../../Exceptions/AuthenticationError";
 import NoChatSelection from "./Components/NoChatSelection";
 import SearchList from "./Components/SearchList";
@@ -14,18 +14,13 @@ export default function ChatEnvironment() {
   const { getContacts } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const [searchMode, setSearchMode] = useState(false);
-  const [contacts, setContacts] = useState();
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    console.log(getToken());
     (async function () {
-      let temp = await getContacts(1, 10, getToken());
-      console.log(temp);
-      setContacts();
+      await getContacts(1, 10, getToken());
     })();
-  }, []);
-  console.log(contacts);
+  }, [getContacts, getToken]);
 
   async function handleSearch(e) {
     if (!e.target.value) {
@@ -51,7 +46,7 @@ export default function ChatEnvironment() {
           </label>
         </div>
         <div className="flex-1">
-          {!searchMode &&  <ContactLists />}
+          {!searchMode && <ContactLists />}
           {searchMode && (
             <div className="flex-1 max-h-[512px] overflow-y-auto ">
               <SearchList search={search} />
@@ -60,7 +55,7 @@ export default function ChatEnvironment() {
         </div>
       </div>
       <div className="flex-grow">
-        <ChatWindow  />
+        <ChatWindow />
       </div>
     </div>
   );

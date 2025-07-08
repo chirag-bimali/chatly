@@ -12,19 +12,37 @@ import { useNavigate } from "react-router-dom";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 import AuthenticationError from "../../../../Exceptions/AuthenticationError";
+import ContactContextMenu from "./ContactContextMenu";
+import AppContext from "../../../../Context/AppContext";
 
 export default function ContactLists() {
   const { getContacts } = useContext(APIContext);
+  const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+  });
   const { getToken, getUser } = useContext(AuthContext);
   const [contacts, setContacts] = useState([]);
   let user = getUser();
   const navigate = useNavigate();
 
+  // reset context menu if set to globel is true
+  useEffect(() => {
+    if (!globalContextMenu) {
+      setContextMenu({
+        visible: false,
+        x: 0,
+        y: 0,
+      });
+    }
+  }, [globalContextMenu]);
+
   useEffect(() => {
     (async function () {
       try {
         let c = await getContacts(1, 10000, getToken());
-        console.log(c);
         setContacts(c);
       } catch (e) {
         if (e instanceof AuthenticationError) {
@@ -34,12 +52,6 @@ export default function ContactLists() {
     })();
   }, [getContacts, getToken, navigate]);
 
-  const [contextMenu, setContextMenu] = useState({
-    visible: false, // Should the menu be shown?
-    x: 0, // X position on screen
-    y: 0, // Y position on screen
-    messageId: null, // Which message was clicked?
-  });
   const containerRef = useRef(null);
   return (
     <div>
@@ -50,19 +62,14 @@ export default function ContactLists() {
           ref={containerRef}
           onContextMenu={(e) => {
             e.preventDefault();
-            if (e.target.closest(".contact") !== null) {
-              if (contextMenu.visible === true) {
-                setContextMenu({ visible: false, x: 0, y: 0 });
-                return;
-              }
-              setContextMenu({ visible: true, x: e.pageX, y: e.pageY });
-            }
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            if (contextMenu.visible === true) {
-              setContextMenu({ ...contextMenu, visible: false });
+            if (globalContextMenu) {
+              setGlobalContextMenu(false);
               return;
+            }
+            if (e.target.closest(".contact") !== null) {
+              setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+              setGlobalContextMenu(true);
+              e.stopPropagation();
             }
           }}
         >
@@ -82,51 +89,7 @@ export default function ContactLists() {
             );
           })}
 
-          {contextMenu.visible && (
-            <div
-              className="absolute bg-neutral-200 rounded shadow-md z-50"
-              style={{ top: contextMenu.y, left: contextMenu.x }}
-            >
-              <ul className="text-sm">
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <Window className="h-4 w-4" />
-                  </span>
-                  <p>Open in new tab</p>
-                </li>
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <Archive className="h-4 w-4" />
-                  </span>
-                  <p>Archive</p>
-                </li>
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <Pin className="h-4 w-4" />
-                  </span>
-                  <p>Pin</p>
-                </li>
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <MailOpen className="h-4 w-4" />
-                  </span>
-                  <p>Mark as unread</p>
-                </li>
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <History className="h-4 w-4" />
-                  </span>
-                  <p>Clear History</p>
-                </li>
-                <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-                  <span className="px-4 py-3 flex items-center justify-center">
-                    <Delete className="h-4 w-4" />
-                  </span>
-                  <p>Delete chat</p>
-                </li>
-              </ul>
-            </div>
-          )}
+          <ContactContextMenu contextMenu={contextMenu} />
         </div>
       )}
     </div>

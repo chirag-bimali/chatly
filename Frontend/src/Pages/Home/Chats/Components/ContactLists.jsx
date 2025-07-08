@@ -61,11 +61,11 @@ export default function ContactLists() {
           className="max-h-[512px] overflow-y-scroll"
           ref={containerRef}
           onContextMenu={(e) => {
-            e.preventDefault();
             if (globalContextMenu) {
               setGlobalContextMenu(false);
               return;
             }
+            e.preventDefault();
             if (e.target.closest(".contact") !== null) {
               setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
               setGlobalContextMenu(true);

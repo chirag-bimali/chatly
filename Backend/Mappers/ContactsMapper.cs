@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend.Mappers;
 using Chatly.DTO.Accounts;
 using Chatly.DTO.Contacts;
 using Chatly.Models;
 
-namespace Backend.Mappers
+namespace Chatly.Mappers
 {
     public static class ContactsMapper
     {
@@ -28,7 +29,6 @@ namespace Backend.Mappers
                 Mutated = data.Mutated,
                 Archived = data.Archived,
                 UnreadCount = data.UnreadCount
-
             };
         }
     }

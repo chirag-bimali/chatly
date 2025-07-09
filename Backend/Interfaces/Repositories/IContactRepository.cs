@@ -20,7 +20,7 @@ public interface IContactRepository
         int? unreadCount = null
     );
 
-    public Task<Contact?> GetAsync(
+    public Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,
         string? contactUserName = null,

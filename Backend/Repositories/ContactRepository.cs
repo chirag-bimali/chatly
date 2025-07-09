@@ -165,7 +165,7 @@ public class ContactRepository : IContactRepository
         return contact;
     }
 
-    public async Task<Contact?> GetAsync(
+    public async Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,
         string? contactUserName = null,
@@ -179,13 +179,17 @@ public class ContactRepository : IContactRepository
                 .SetErrorDetails("Could not find contact when both contact id and userid are null");
         }
 
+        var queryable = _dbContext.Contacts.Include(c => c.User).Include(c => c.ContactUser);
+
+
         Contact? contact = null;
-        contact = await _dbContext.Contacts.Include(c => c.User).Include(c => c.ContactUser).FirstOrDefaultAsync(c => c.Id == contactId);
+        contact = await queryable
+            .FirstOrDefaultAsync(c => c.Id == contactId);
 
 
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserId))
         {
-            contact = await _dbContext.Contacts.FirstOrDefaultAsync(c =>
+            contact = await queryable.FirstOrDefaultAsync(c =>
                 (c.UserId == userId && c.ContactId == contactId) ||
                 (c.ContactId == userId && c.UserId == contactId)
             );
@@ -213,7 +217,7 @@ public class ContactRepository : IContactRepository
             );
         }
 
-        return contact;
+        return contact ?? throw new NotFoundException("Contact not found");
     }
 
     public async Task<(List<Contact>, int)> GetAllAsync(
@@ -254,7 +258,8 @@ public class ContactRepository : IContactRepository
             }
 
             var contactsCounts = await queryable.CountAsync();
-            queryable = queryable.Include(c => c.User).Include(c => c.ContactUser).Skip((page - 1) * pageSize).Take(pageSize);
+            queryable = queryable.Include(c => c.User).Include(c => c.ContactUser).Skip((page - 1) * pageSize)
+                .Take(pageSize);
             var contacts = await queryable.ToListAsync();
 
 

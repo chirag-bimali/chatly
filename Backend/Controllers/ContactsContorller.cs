@@ -6,6 +6,7 @@ using Chatly.Exceptions;
 using Chatly.Extensions;
 using Chatly.Hubs;
 using Chatly.Interfaces.Repositories;
+using Chatly.Mappers;
 using Chatly.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,17 +52,7 @@ public class ContactsController : ControllerBase
             );
 
             return CreatedAtAction(nameof(GetContact), new { contactId = newContact.Id },
-                ApiResponse<ContactDto>.SuccessResponse(new ContactDto
-                {
-                    Id = newContact.Id,
-                    Status = newContact.Status.ToString() ?? "ERR",
-                    UserId = newContact.UserId,
-                    ContactId = newContact.ContactId,
-                    Archived = newContact.Archived,
-                    CreatedAt = newContact.CreatedAt,
-                    UnreadCount = newContact.UnreadCount,
-                    Mutated = newContact.Mutated
-                }, "Added contact", null,
+                ApiResponse<ContactDto>.SuccessResponse(newContact.ToContactsDtoFromContact(), "Added contact", null,
                     StatusCodes.Status201Created));
         }
         catch (ApplicationUnauthorizedAccessException e)
@@ -101,7 +92,7 @@ public class ContactsController : ControllerBase
     public async Task<IActionResult> GetContact([FromRoute] string contactId)
     {
         var c = await _contactRepository.GetAsync(contactId: contactId);
-        return Ok(ApiResponse<Contact?>.SuccessResponse(c, "Contact found", null,
+        return Ok(ApiResponse<ContactDto>.SuccessResponse(c.ToContactsDtoFromContact(), "Contact found", null,
             statusCode: StatusCodes.Status200OK));
     }
 
@@ -134,6 +125,7 @@ public class ContactsController : ControllerBase
                 ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
         }
     }
+
     [HttpGet("user")]
     public async Task<IActionResult> GetContactUser([FromQuery] GetContactUserRequestDto request)
     {
@@ -179,7 +171,6 @@ public class ContactsController : ControllerBase
                 ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors)
             );
         }
-
     }
 
 
@@ -211,9 +202,9 @@ public class ContactsController : ControllerBase
 
             return Accepted(ApiResponse<AcceptRequestResponseDto>.SuccessResponse(new AcceptRequestResponseDto
 
-            {
-                ContactId = contact.Id,
-            },
+                {
+                    ContactId = contact.Id,
+                },
                 contact.Status == ContactStatus.Accepted
                     ? "Request accepted successfully"
                     : "Request rejected successfully", null,
@@ -253,9 +244,9 @@ public class ContactsController : ControllerBase
                 await _contactRepository.UpdateAsync(request.ContactId, contactStatus: ContactStatus.Blocked);
 
             return Accepted(ApiResponse<BlockResponseDto>.SuccessResponse(new BlockResponseDto
-            {
-                ContactId = contact.Id,
-            }, request.IsBlocked ? "Blocked successfully" : "Unblocked successfully", null,
+                {
+                    ContactId = contact.Id,
+                }, request.IsBlocked ? "Blocked successfully" : "Unblocked successfully", null,
                 StatusCodes.Status200OK));
         }
         catch (NotFoundException e)

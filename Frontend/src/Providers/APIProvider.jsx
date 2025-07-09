@@ -4,6 +4,7 @@ import APIContext from "../Context/APIContext";
 import NetworkError from "../Exceptions/NetworkError";
 import BadRequest from "../Exceptions/BadRequest";
 import AuthenticationError from "../Exceptions/AuthenticationError";
+import ArgumentError from "../Exceptions/ArgumentError";
 import { useCallback } from "react";
 
 let API_ROUTE = "http://localhost:5280/api";
@@ -58,11 +59,50 @@ export default function APIProvider({ children }) {
     }
   },
   []);
+  const getContact = useCallback(async function ({ contactId, token }) {
+    try {
+      const route = `${API_ROUTE}/contacts/${contactId}`;
+      var response = await axios.get(route, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }, []);
+  const getMessages = useCallback(async function ({
+    contactId,
+    page = 1,
+    pageSize = 10,
+    token,
+  }) {
+    if (!contactId)
+      throw new ArgumentError(`Contact Id cannot be ${contactId}`);
+    const route = `${API_ROUTE}/messages/readmessages?ContactId=${contactId}&Page=${page}&PageSize=${pageSize}`;
+
+    const response = await axios.get(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        ContactId: contactId,
+        Page: page,
+        PageSize: pageSize,
+      },
+    });
+    return response?.data;
+  },
+  []);
   return (
     <APIContext.Provider
       value={{
         searchUsers,
         getContacts,
+        getContact,
+        getMessages,
       }}
     >
       {children}

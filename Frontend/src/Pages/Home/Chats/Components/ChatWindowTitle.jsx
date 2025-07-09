@@ -1,14 +1,21 @@
 import Search from "../../../../assets/search.svg?react";
 import TrippleDots from "../../../../assets/tripple-dots.svg?react";
-export default function ChatWindowTitle({ name, lastSeen }) {
+import { formatDistanceToNow, parseISO } from "date-fns";
+
+export default function ChatWindowTitle({ contactUser }) {
+  const date = parseISO(contactUser.lastSeen);
+  const formatted = formatDistanceToNow(date, {
+    addSuffix: true,
+  });
+
   return (
     <div className="flex items-center justify-between">
       <div>
         <div className="prose prose-p:text-4xl prose-p:mb-3 prose-p:font-semibold">
-          <p>{name ? name : "Ethan Carter"}</p>
+          <p>{contactUser.displayName}</p>
         </div>
         <div className="prose prose-p:text-sm prose-p:text-neutral-400">
-          <p>{lastSeen ? lastSeen : "last seen 23 min ago"}</p>
+          <p>{formatted}</p>
         </div>
       </div>
       <div className="flex gap-4 self-start">

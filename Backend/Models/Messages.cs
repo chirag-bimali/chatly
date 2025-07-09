@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices.JavaScript;
+
 namespace Chatly.Models;
 
 public class Message
@@ -9,6 +11,7 @@ public class Message
 
     public string? Content { get; set; }
     public string? SeenAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public bool Read { get; set; }
     public bool IsForwarded { get; set; }
     public bool IsReply { get; set; }

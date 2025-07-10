@@ -6,27 +6,32 @@ import AppContext from "../../../../Context/AppContext";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 
-export default function ChatsWindowBody({ contactDetails }) {
+export default function ChatsWindowBody({
+  contactDetails,
+  messages,
+  setMessages,
+  messageUpdateReason,
+}) {
   const chatContainerRef = useRef(null);
 
   const { getMessages } = useContext(APIContext);
   const { getToken, getUser } = useContext(AuthContext);
-  const [messages, setMessages] = useState([]);
-  const [loadedPage, setLoadedPage] = useState(1);
+  const [skip, setSkip] = useState(0);
   const [pageSize, _] = useState(10);
   const [totalMessages, setTotalMessages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [oldScrollHeight, setOldScrollHeight] = useState();
+  const prevScrollTopRef = useRef(0);
+  const prevScrollHeightRef = useRef(0);
 
   const currUser = getUser();
 
   useEffect(() => {
     if (contactDetails) {
       setMessages([]);
-      setLoadedPage(1);
+      setSkip(0);
       setLoading(true);
     }
-  }, [contactDetails]);
+  }, [contactDetails, setMessages]);
 
   useEffect(() => {
     (async function () {
@@ -35,37 +40,60 @@ export default function ChatsWindowBody({ contactDetails }) {
         const response = await getMessages({
           contactId,
           token: getToken(),
-          pageSize: pageSize,
-          page: loadedPage,
+          skip: skip,
+          take: pageSize,
         });
         setTotalMessages(response.totalCount);
-        if (loadedPage === 1) {
+        if (skip < pageSize) {
           setMessages(response.data);
+          messageUpdateReason.current = "initial";
         } else {
-          setMessages((prev) => {
-            return [...response.data, ...prev];
-          });
+          setTimeout(() => {
+            setMessages((prev) => {
+              return [...response.data, ...prev];
+            });
+          }, 0);
         }
         setLoading(false);
       } catch (e) {
         console.log(e);
       }
     })();
-  }, [contactDetails, getMessages, getToken, pageSize, loadedPage]);
+  }, [
+    contactDetails,
+    getMessages,
+    getToken,
+    pageSize,
+    setMessages,
+    skip,
+    messageUpdateReason,
+  ]);
 
   useEffect(() => {
     const el = chatContainerRef.current;
-    if (el) {
-      if (loadedPage === 1) {
-        el.scrollTop = el.scrollHeight;
-      } else {
-        const newScrollHeight = el.scrollHeight;
+
+    if (el && !loading) {
+      if (messageUpdateReason.current === "initial") {
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            el.scrollTop = el.scrollHeight;
+          });
+        }, 100);
+      } else if (messageUpdateReason.current === "pagination") {
         requestAnimationFrame(() => {
-          el.scrollTop = (newScrollHeight - oldScrollHeight);
+          const newScrollHeight = el.scrollHeight;
+          el.scrollTop = newScrollHeight - prevScrollHeightRef.current;
         });
+      } else if (messageUpdateReason.current === "new") {
+        setTimeout(() => {
+          const newScrollHeight = el.scrollHeight;
+          requestAnimationFrame(() => {
+            el.scrollTop = newScrollHeight;
+          });
+        }, 0);
       }
     }
-  }, [messages, loadedPage, oldScrollHeight]);
+  }, [messageUpdateReason, messages, loading]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -75,9 +103,11 @@ export default function ChatsWindowBody({ contactDetails }) {
         !loading &&
         messages.length < totalMessages
       ) {
-        setOldScrollHeight(chatContainer.scrollHeight);
         setLoading(true);
-        setLoadedPage((prev) => prev + 1);
+        setSkip((prev) => prev + pageSize);
+        prevScrollTopRef.current = chatContainer.scrollTop;
+        prevScrollHeightRef.current = chatContainer.scrollHeight;
+        messageUpdateReason.current = "pagination";
       }
     };
     if (chatContainer) {
@@ -89,9 +119,8 @@ export default function ChatsWindowBody({ contactDetails }) {
         chatContainer.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [loading, messages, totalMessages]);
+  }, [loading, messages, totalMessages, pageSize, messageUpdateReason]);
 
-  console.log(messages);
   return (
     <div className="h-[460px] overflow-y-scroll" ref={chatContainerRef}>
       {messages.map((e) => {

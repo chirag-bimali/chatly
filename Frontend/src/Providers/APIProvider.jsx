@@ -75,13 +75,13 @@ export default function APIProvider({ children }) {
   }, []);
   const getMessages = useCallback(async function ({
     contactId,
-    page = 1,
-    pageSize = 10,
+    skip = 0,
+    take = 10,
     token,
   }) {
     if (!contactId)
       throw new ArgumentError(`Contact Id cannot be ${contactId}`);
-    const route = `${API_ROUTE}/messages/readmessages?ContactId=${contactId}&Page=${page}&PageSize=${pageSize}`;
+    const route = `${API_ROUTE}/messages/readmessages`;
 
     const response = await axios.get(route, {
       headers: {
@@ -89,11 +89,37 @@ export default function APIProvider({ children }) {
       },
       params: {
         ContactId: contactId,
-        Page: page,
-        PageSize: pageSize,
+        Skip: skip,
+        Take: take,
       },
     });
     return response?.data;
+  },
+  []);
+  const sendMessage = useCallback(async function ({
+    content,
+    contactId,
+    replyMessageId,
+    forwardMessageId,
+    token,
+  }) {
+    console.log(content);
+    const route = `${API_ROUTE}/messages/sendMessage`;
+    const response = await axios.post(
+      route,
+      {
+        ContactId: contactId,
+        Content: content,
+        ReplyMessageId: replyMessageId,
+        ForwardMessageId: forwardMessageId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   },
   []);
   return (
@@ -103,6 +129,7 @@ export default function APIProvider({ children }) {
         getContacts,
         getContact,
         getMessages,
+        sendMessage,
       }}
     >
       {children}

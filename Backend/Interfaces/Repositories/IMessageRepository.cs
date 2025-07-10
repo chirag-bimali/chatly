@@ -15,9 +15,10 @@ public interface IMessageRepository
     public Task<(List<Message>, int)> GetAllAsync(
         string? contactId,
         string? userId,
-        int page = 1,
-        int pageSize = 10
+        int skip = 1,
+        int take = 10
     );
+    
 
     public Task<Message> EditMessageAsync(
         string messageId,

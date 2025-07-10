@@ -89,7 +89,7 @@ public class MessagesController : ControllerBase
 
 
             var (messages, count) =
-                await _repository.GetAllAsync(request.ContactId, userId, request.Page ?? 1, request.PageSize ?? 10);
+                await _repository.GetAllAsync(request.ContactId, userId, request.Skip, request.Take);
 
 
             return Ok(ApiResponse<List<MessageResponseDto>>.SuccessResponse(messages.ToListMessageResponseDto(),

@@ -34,6 +34,11 @@ public class MessageRepository : IMessageRepository
         var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == contactId);
         if (contact == null) throw new NotFoundException("Contact not found");
 
+        if (contact.Status != ContactStatus.Accepted)
+        {
+            throw new ConflictException("Contact is not accepted");
+        }
+
         var sender = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == senderId);
         if (sender == null) throw new NotFoundException("Sender not found");
 
@@ -80,8 +85,7 @@ public class MessageRepository : IMessageRepository
             Id = Guid.NewGuid().ToString(),
             ContactId = contact.Id,
             SenderId = sender.Id,
-            Content = content,
-            CreatedAt = DateTime.Now
+            Content = content
         };
         ReplyMessage? newReplyMessage = null;
         ForwardMessage? newforwardMessage = null;
@@ -128,31 +132,36 @@ public class MessageRepository : IMessageRepository
     public async Task<(List<Message>, int)> GetAllAsync(
         string? contactId,
         string? userId,
-        int page = 1,
-        int pageSize = 10
+        int skip = 0,
+        int take = 10
     )
     {
-        if (page < 1)
+        if (skip < 0)
         {
-            page = 1;
+            skip = 0;
         }
 
-        if (pageSize < 1)
+        if (take < 1)
         {
-            pageSize = 10;
+            take = 1;
         }
 
         var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == contactId);
         if (contact == null) throw new NotFoundException("Contact not found");
+        if (contact.Status != ContactStatus.Accepted) throw new ConflictException("Contact is not accepted");
         if (!(contact.ContactId == userId || contact.UserId == userId))
             throw new ApplicationUnauthorizedAccessException("You are not authorized to access this contact");
         var count = await _dbContext.Messages.Where(x => x.ContactId == contactId).CountAsync();
         var queryable = _dbContext.Messages
             .Include(x => x.ForwardMessage)
             .Include(x => x.ReplyMessage)
+<<<<<<< Updated upstream
+            .Where(c => c.ContactId == contactId).Skip((page - 1) * pageSize).Take(pageSize);
+=======
             .OrderByDescending(c => c.CreatedAt)
-            .Where(c => c.ContactId == contactId).Skip((page - 1) * pageSize).Take(pageSize)
+            .Where(c => c.ContactId == contactId).Skip(skip).Take(take)
             .OrderBy(c => c.CreatedAt);
+>>>>>>> Stashed changes
         var replyMessages = await queryable.ToListAsync();
         return (await queryable.ToListAsync(), count);
     }

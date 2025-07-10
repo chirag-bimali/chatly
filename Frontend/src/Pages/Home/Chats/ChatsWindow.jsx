@@ -3,7 +3,7 @@ import MessageInputField from "./Components/MessageInputField";
 import NoChatSelection from "./Components/NoChatSelection";
 import ChatWindowTitle from "./Components/ChatWindowTitle";
 import ChatsWindowBody from "./Components/ChatsWindowBody";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import APIContext from "../../../Context/APIContext";
 import AuthContext from "../../../Context/AuthContext";
 
@@ -15,10 +15,12 @@ export default function ChatsWindow() {
   const currUser = useMemo(() => getUser(), [getUser]);
 
   const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState([]);
 
   const { getContact } = useContext(APIContext);
   const [chatDetails, setChatDetails] = useState({});
   const [contactUser, setContactUser] = useState({});
+  const messageUpdateReason = useRef("initial");
   const navigate = useNavigate();
 
   // Load Contact
@@ -65,9 +67,19 @@ export default function ChatsWindow() {
         <div className="flex flex-col px-6 h-full gap-6">
           <ChatWindowTitle contactUser={contactUser} />
           <div className="flex-grow h-full">
-            <ChatsWindowBody contactDetails={chatDetails} />
+            <ChatsWindowBody
+              contactDetails={chatDetails}
+              messages={messages}
+              setMessages={setMessages}
+              messageUpdateReason={messageUpdateReason}
+            />
           </div>
-          <MessageInputField />
+          <MessageInputField
+            messages={messages}
+            setMessages={setMessages}
+            contactId={chatId}
+            messageUpdateReason={messageUpdateReason}
+          />
         </div>
       </div>
     )

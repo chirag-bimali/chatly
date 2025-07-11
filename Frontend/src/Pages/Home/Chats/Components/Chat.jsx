@@ -1,13 +1,21 @@
 import { useContext, useEffect, useState } from "react";
 import AppContext from "../../../../Context/AppContext";
 import MessageContextMenu from "./MessageContextMenu";
+import AuthContext from "../../../../Context/AuthContext";
 
-export default function Chat({ isLeft, imgSrc, name, message }) {
+export default function Chat({
+  isLeft,
+  imgSrc,
+  name,
+  message,
+  contactDetails,
+}) {
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
     y: 0,
   });
+  const { getUser } = useContext(AuthContext);
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
   useEffect(() => {
     if (!globalContextMenu) {
@@ -18,8 +26,23 @@ export default function Chat({ isLeft, imgSrc, name, message }) {
       });
     }
   }, [globalContextMenu]);
+  const currUser = getUser();
+  const contactUser =
+    contactDetails?.user.id === currUser.id
+      ? contactDetails.contactUser
+      : contactDetails.user;
+  console.log(currUser);
+  console.log(contactUser);
+  console.log(message.senderId, currUser.id);
+  console.log(message.senderId === currUser.id);
+  console.log("-------------------------------");
+
   return (
-    <div className={`chat ${isLeft ? "chat-start" : "chat-end"}`}>
+    <div
+      className={`chat ${
+        message.senderId === currUser.id ? "chat-end" : "chat-start"
+      }`}
+    >
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
           <img
@@ -33,7 +56,9 @@ export default function Chat({ isLeft, imgSrc, name, message }) {
         </div>
       </div>
       <div className="chat-header text-neutral-400">
-        {name ? name : "Noobie"}
+        {message.senderId === currUser.id
+          ? currUser.displayName
+          : contactUser.displayName}
       </div>
       <div
         className="chat-bubble"
@@ -50,7 +75,7 @@ export default function Chat({ isLeft, imgSrc, name, message }) {
           }
         }}
       >
-        {message ? message : "Sent you a message"}
+        {message?.content ? message?.content : "Sent you a message"}
         <MessageContextMenu contextMenu={contextMenu} />
       </div>
     </div>

@@ -128,7 +128,8 @@ export default function ChatsWindowBody({
           <Chat
             key={e.id}
             isLeft={e.senderId !== currUser.id}
-            message={e.content}
+            contactDetails={contactDetails}
+            message={e}
           />
         );
       })}

@@ -36,13 +36,25 @@ export default function APIProvider({ children }) {
       throw e;
     }
   }
+  const getUserById = useCallback(async function ({ userId, token }) {
+    if (!userId) {
+      throw new ArgumentError("User id cannot be undefined");
+    }
+    const route = `${API_ROUTE}/Users/${userId}`;
+    const response = await axios.get(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }, []);
   const getContacts = useCallback(async function (
     page = 1,
     pageSize = 10,
     token = ""
   ) {
     try {
-      const route = `${API_ROUTE}/contacts/`;
+      const route = `${API_ROUTE}/contacts/all`;
       const response = await axios.get(route, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -59,19 +71,34 @@ export default function APIProvider({ children }) {
     }
   },
   []);
-  const getContact = useCallback(async function ({ contactId, token }) {
-    try {
-      const route = `${API_ROUTE}/contacts/${contactId}`;
-      var response = await axios.get(route, {
+  const createContact = useCallback(async function ({ contactUserId, token }) {
+    const route = `${API_ROUTE}/contacts`;
+    console.log(contactUserId);
+    let response = await axios.post(
+      route,
+      {
+        ContactUserId: contactUserId,
+      },
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      return response.data;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
+      }
+    );
+    return response.data;
+  }, []);
+  const getContact = useCallback(async function ({ contactId, userId, token }) {
+    const route = `${API_ROUTE}/contacts/`;
+    let response = await axios.get(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        ContactId: contactId,
+        UserId: userId,
+      },
+    });
+    return response.data;
   }, []);
   const getMessages = useCallback(async function ({
     contactId,
@@ -122,14 +149,33 @@ export default function APIProvider({ children }) {
     return response.data;
   },
   []);
+
+  const blockUser = useCallback(async function ({ contactId, token }) {
+    let route = `${API_ROUTE}/contacts/block`;
+    let response = await axios.patch(
+      route,
+      {
+        ContactId: contactId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }, []);
   return (
     <APIContext.Provider
       value={{
         searchUsers,
+        getUserById,
         getContacts,
         getContact,
         getMessages,
         sendMessage,
+        createContact,
+        blockUser,
       }}
     >
       {children}

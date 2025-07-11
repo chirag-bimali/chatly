@@ -28,7 +28,6 @@ export default function ContactLists() {
   let user = getUser();
   const navigate = useNavigate();
 
-  // reset context menu if set to globel is true
   useEffect(() => {
     if (!globalContextMenu) {
       setContextMenu({

@@ -4,13 +4,15 @@ import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 
 export default function MessageInputField({
-  contactId,
+  chatDetails,
   setMessages,
   messageUpdateReason,
+  draftMode,
 }) {
   const { sendMessage } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const [chatContent, setChatContent] = useState("");
+  const contactId = chatDetails.id;
   async function handleSubmit(e) {
     e.preventDefault();
     try {
@@ -39,12 +41,16 @@ export default function MessageInputField({
                 name="message-content"
                 required
                 value={chatContent}
+                disabled={draftMode || chatDetails.status === "Blocked"}
                 onChange={(e) => setChatContent(e.target.value)}
                 autoComplete="off"
               />
             </label>
           </div>
-          <button className="btn btn-primary min-w-[5.25rem] h-fit w-fit join-item text-sm items-center justify-center rounded-full py-1.5 px-4">
+          <button
+            className={`btn btn-primary min-w-[5.25rem] h-fit w-fit join-item text-sm items-center justify-center rounded-full py-1.5 px-4`}
+            disabled={draftMode || chatDetails.status === "Blocked"}
+          >
             <span className="self-center text-sm font-normal max-h-min">
               Send
             </span>

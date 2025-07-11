@@ -4,11 +4,10 @@ import MessageContextMenu from "./MessageContextMenu";
 import AuthContext from "../../../../Context/AuthContext";
 
 export default function Chat({
-  isLeft,
   imgSrc,
-  name,
   message,
   contactDetails,
+  contactUserDetails
 }) {
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -27,15 +26,7 @@ export default function Chat({
     }
   }, [globalContextMenu]);
   const currUser = getUser();
-  const contactUser =
-    contactDetails?.user.id === currUser.id
-      ? contactDetails.contactUser
-      : contactDetails.user;
-  console.log(currUser);
-  console.log(contactUser);
-  console.log(message.senderId, currUser.id);
-  console.log(message.senderId === currUser.id);
-  console.log("-------------------------------");
+  const contactUser = contactUserDetails;
 
   return (
     <div

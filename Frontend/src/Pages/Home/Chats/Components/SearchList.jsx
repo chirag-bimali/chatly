@@ -33,7 +33,6 @@ export default function SearchList({ search }) {
     })();
   }, [search, searchUsers, getToken]);
 
-  console.log(users.length !== 0);
   return (
     <div>
       {users.length !== 0 &&

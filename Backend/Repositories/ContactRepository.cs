@@ -190,8 +190,8 @@ public class ContactRepository : IContactRepository
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserId))
         {
             contact = await queryable.FirstOrDefaultAsync(c =>
-                (c.UserId == userId && c.ContactId == contactId) ||
-                (c.ContactId == userId && c.UserId == contactId)
+                (c.UserId == userId && c.ContactId == contactUserId) ||
+                (c.ContactId == userId && c.UserId == contactUserId)
             );
         }
 
@@ -200,6 +200,7 @@ public class ContactRepository : IContactRepository
             error.AddError("ContactUserId", "Contact user id field is null but not required")
                 .AddParam(nameof(contactUserId));
         }
+
 
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserName))
         {
@@ -217,7 +218,10 @@ public class ContactRepository : IContactRepository
             );
         }
 
-        return contact ?? throw new NotFoundException("Contact not found");
+        Console.WriteLine(contactUserId);
+        Console.WriteLine(userId);
+
+        return contact ?? throw error;
     }
 
     public async Task<(List<Contact>, int)> GetAllAsync(

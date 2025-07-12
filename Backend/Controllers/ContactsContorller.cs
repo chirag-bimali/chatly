@@ -87,16 +87,31 @@ public class ContactsController : ControllerBase
         }
     }
 
-    [HttpGet("{contactId}")]
+    [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetContact([FromRoute] string contactId)
+    public async Task<IActionResult> GetContact([FromQuery] GetContact request)
     {
-        var c = await _contactRepository.GetAsync(contactId: contactId);
-        return Ok(ApiResponse<ContactDto>.SuccessResponse(c.ToContactsDtoFromContact(), "Contact found", null,
-            statusCode: StatusCodes.Status200OK));
+        try
+        {
+            var c = await _contactRepository.GetAsync(contactId: request.ContactId, contactUserId: request.UserId,
+                userId: User.GetUserId()
+            );
+            return Ok(ApiResponse<ContactDto>.SuccessResponse(c.ToContactsDtoFromContact(), "Contact found", null,
+                statusCode: StatusCodes.Status200OK));
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(
+                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+        }
+        catch (ApplicationArgumentException e)
+        {
+            return BadRequest(
+                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+        }
     }
 
-    [HttpGet]
+    [HttpGet("all")]
     [Authorize]
     public async Task<IActionResult> GetUserContacts([FromQuery] GetUserContactsRequestDto request)
     {
@@ -122,6 +137,11 @@ public class ContactsController : ControllerBase
         catch (ApplicationUnauthorizedAccessException e)
         {
             return this.InternalServerError(
+                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(
                 ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
         }
     }

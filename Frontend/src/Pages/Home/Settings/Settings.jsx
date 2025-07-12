@@ -17,7 +17,7 @@ function InputField({ legend, placeholder, message }) {
 }
 export default function Settings() {
   return (
-    <div className="px-6 py-12">
+    <div className="px-6 py-12 overflow-y-auto">
       <div className="w-8/12 mx-auto">
         <div className="prose prose-p:text-3xl prose-p:font-semibold prose-p:mb-8">
           <p>Settings</p>

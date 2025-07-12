@@ -1,4 +1,5 @@
 using System.Net;
+using Backend.Mappers;
 using Chatly.DTO;
 using Chatly.DTO.Accounts;
 using Chatly.DTO.Users;
@@ -8,6 +9,7 @@ using Chatly.Interfaces.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Chatly.Helper;
+using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Controllers;
 
@@ -44,6 +46,27 @@ public class UsersController : ControllerBase
                     { "Server", new List<string> { "Something went wrong" } }
                 }
             ));
+        }
+    }
+
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById([FromRoute] string id)
+    {
+        try
+        {
+            var user = await _userRepository.GetUserAsync(id);
+            return Ok(ApiResponse<UserDto>.SuccessResponse(user.ToUserDtoFromUser(), "Success", null, 200));
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(ApiResponse<object>.ErrorResponse(e.Message, StatusCodes.Status401Unauthorized,
+                e.ErrorCode, e.Details, e.Errors));
+        }
+        catch (ApplicationArgumentException e)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse(e.Message, StatusCodes.Status401Unauthorized,
+                e.ErrorCode, e.Details, e.Errors));
         }
     }
 

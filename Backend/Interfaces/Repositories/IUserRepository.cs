@@ -6,6 +6,7 @@ namespace Chatly.Interfaces.Repositories;
 public interface IUserRepository
 {
     public Task<SearchUsersResponseDto> SearchUsers(SearchUsersRequestDto request);
+    public Task<User> GetUserAsync(string? userId = null, string? username = null);
     public Task<(Stream, string)> GetProfilePictureAsync(string? userId);
     public Task UpdateProfilePictureAsync(IFormFile? image, string? userId);
     public Task<bool> DeleteUserAsync(string? userId = null);

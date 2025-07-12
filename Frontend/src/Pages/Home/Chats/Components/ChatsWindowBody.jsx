@@ -11,11 +11,12 @@ export default function ChatsWindowBody({
   messages,
   setMessages,
   messageUpdateReason,
+  contactUserDetails
 }) {
   const chatContainerRef = useRef(null);
 
   const { getMessages } = useContext(APIContext);
-  const { getToken, getUser } = useContext(AuthContext);
+  const { getToken  } = useContext(AuthContext);
   const [skip, setSkip] = useState(0);
   const [pageSize, _] = useState(10);
   const [totalMessages, setTotalMessages] = useState(0);
@@ -23,7 +24,6 @@ export default function ChatsWindowBody({
   const prevScrollTopRef = useRef(0);
   const prevScrollHeightRef = useRef(0);
 
-  const currUser = getUser();
 
   useEffect(() => {
     if (contactDetails) {
@@ -34,9 +34,11 @@ export default function ChatsWindowBody({
   }, [contactDetails, setMessages]);
 
   useEffect(() => {
+    if (!contactDetails.id) return;
     (async function () {
       try {
         const contactId = contactDetails?.id;
+        console.log(contactDetails);
         const response = await getMessages({
           contactId,
           token: getToken(),
@@ -122,16 +124,18 @@ export default function ChatsWindowBody({
   }, [loading, messages, totalMessages, pageSize, messageUpdateReason]);
 
   return (
-    <div className="h-[460px] overflow-y-scroll" ref={chatContainerRef}>
-      {messages.map((e) => {
-        return (
-          <Chat
-            key={e.id}
-            isLeft={e.senderId !== currUser.id}
-            message={e.content}
-          />
-        );
-      })}
+    <div className="flex-1 overflow-y-auto" ref={chatContainerRef}>
+      {!loading &&
+        messages.map((e) => {
+          return (
+            <Chat
+              key={e.id}
+              contactDetails={contactDetails}
+              message={e}
+              contactUserDetails={contactUserDetails}
+            />
+          );
+        })}
     </div>
   );
 }

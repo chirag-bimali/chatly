@@ -10,10 +10,10 @@ import AppContext from "../../Context/AppContext";
 export default function Home() {
   return (
     <APIProvider>
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col h-full flex-1">
         <TopBar showProfile={true} />
         <div className="divider m-0"></div>
-        <div className="flex flex-1">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <Routes>
             <Route path="/chat/:chatId" element={<ChatEnvironment />} />
             <Route path="/chat/draft/:userId" element={<ChatEnvironment />} />

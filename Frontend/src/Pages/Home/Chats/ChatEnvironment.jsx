@@ -31,30 +31,26 @@ export default function ChatEnvironment() {
     setSearchMode(true);
   }
   return (
-    <div className="px-6 py-5 flex justify-between">
-      <div className="flex flex-col min-w-80 w-full gap-8 flex-1/5 max-w-1/4">
-        <div>
-          <label className="input opacity-50 rounded-xl px-4 py-2 h-fit w-full space-x-0.5">
-            <Search className="h-6" />
-            <input
-              type="search"
-              required
-              placeholder="Search users..."
-              className="bg-transparent  text-base placeholder-base-content"
-              onChange={(e) => handleSearch(e)}
-            />
-          </label>
-        </div>
-        <div className="flex-1">
-          {!searchMode && <ContactLists />}
-          {searchMode && (
-            <div className="flex-1 max-h-[512px] overflow-y-auto ">
-              <SearchList search={search} />
-            </div>
-          )}
-        </div>
+    <div className="px-6 py-5 pb-0 flex justify-between flex-1 overflow-hidden">
+      <div className="flex flex-col min-w-80 w-full gap-8 max-w-sm">
+        <label className="input opacity-50 rounded-xl px-4 py-2 h-fit w-full space-x-0.5">
+          <Search className="h-6" />
+          <input
+            type="search"
+            required
+            placeholder="Search users..."
+            className="bg-transparent  text-base placeholder-base-content"
+            onChange={(e) => handleSearch(e)}
+          />
+        </label>
+        {!searchMode && <ContactLists />}
+        {searchMode && (
+          // <div className="flex-1 max-h-[512px]">
+          <SearchList search={search} />
+          // </div>
+        )}
       </div>
-      <div className="flex-grow">
+      <div className="flex flex-col px-6 flex-1">
         <ChatWindow />
       </div>
     </div>

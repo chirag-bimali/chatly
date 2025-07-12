@@ -124,7 +124,7 @@ export default function ChatsWindowBody({
   }, [loading, messages, totalMessages, pageSize, messageUpdateReason]);
 
   return (
-    <div className="h-[460px] overflow-y-scroll" ref={chatContainerRef}>
+    <div className="flex-1 overflow-y-auto" ref={chatContainerRef}>
       {!loading &&
         messages.map((e) => {
           return (

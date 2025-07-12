@@ -135,72 +135,70 @@ export default function ChatsWindow() {
   }
   return (
     !loading && (
-      <div className="h-full w-[926px]">
-        <div className="flex flex-col px-6 h-full gap-6">
-          <ChatWindowTitle
-            chatDetails={chatDetails}
-            draftMode={draftMode}
+      <>
+        <ChatWindowTitle
+          chatDetails={chatDetails}
+          draftMode={draftMode}
+          contactUserDetails={contactUserDetails}
+        />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <ChatsWindowBody
+            contactDetails={chatDetails}
+            messages={messages}
+            setMessages={setMessages}
+            messageUpdateReason={messageUpdateReason}
             contactUserDetails={contactUserDetails}
           />
-          <div className="flex-grow h-full">
-            <ChatsWindowBody
-              contactDetails={chatDetails}
-              messages={messages}
-              setMessages={setMessages}
-              messageUpdateReason={messageUpdateReason}
-              contactUserDetails={contactUserDetails}
-            />
-          </div>
-          <div className="relative">
-            {draftMode && (
-              <div className="absolute w-full bottom-full py-8">
-                <div className="w-full flex flex-col items-center gap-4">
-                  <div className="w-full prose prose-p:text-4xl prose-p:font-bold mb-5">
-                    <p className="text-center">Say Hi 👋👋</p>
-                  </div>
-                  <div className="w-full prose prose-p:text-xs">
-                    <p className="text-center">
-                      Start chatting by adding user to contact
-                    </p>
-                  </div>
-                  <div className="w-full flex gap-12 items-center justify-center">
-                    <button
-                      className="btn btn-sm btn-error btn-outline w-52"
-                      onClick={(e) => handleBlock(e)}
-                    >
-                      Block
-                    </button>
-                    <button
-                      className="btn btn-sm btn-accent btn-outline w-52"
-                      onClick={(e) => handleAddToContact(e)}
-                    >
-                      Add to Contact
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {chatDetails.status === "Blocked" && (
-              <div className="absolute w-full bottom-full py-8">
-                <div className="w-full flex flex-col items-center gap-4">
-                  <div className="w-full prose prose-p:text-xs">
-                    <p className="text-center">You are blocked.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <MessageInputField
-              draftMode={draftMode}
-              contactUserDetails={contactUserDetails}
-              messages={messages}
-              setMessages={setMessages}
-              chatDetails={chatDetails}
-              messageUpdateReason={messageUpdateReason}
-            />
-          </div>
         </div>
-      </div>
+        <div className="relative">
+          {draftMode && (
+            <div className="absolute w-full bottom-full py-8">
+              <div className="w-full flex flex-col items-center gap-4">
+                <div className="w-full prose prose-p:text-4xl prose-p:font-bold mb-5">
+                  <p className="text-center">Say Hi 👋👋</p>
+                </div>
+                <div className="w-full prose prose-p:text-xs">
+                  <p className="text-center">
+                    Start chatting by adding user to contact
+                  </p>
+                </div>
+                <div className="w-full flex gap-12 items-center justify-center">
+                  <button
+                    className="btn btn-sm btn-error btn-outline w-52"
+                    onClick={(e) => handleBlock(e)}
+                  >
+                    Block
+                  </button>
+                  <button
+                    className="btn btn-sm btn-accent btn-outline w-52"
+                    onClick={(e) => handleAddToContact(e)}
+                  >
+                    Add to Contact
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {chatDetails.status === "Blocked" && (
+            <div className="absolute w-full bottom-full py-8">
+              <div className="w-full flex flex-col items-center gap-4">
+                <div className="w-full prose prose-p:text-xs">
+                  <p className="text-center">You are blocked.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <MessageInputField
+            draftMode={draftMode}
+            contactUserDetails={contactUserDetails}
+            messages={messages}
+            setMessages={setMessages}
+            chatDetails={chatDetails}
+            messageUpdateReason={messageUpdateReason}
+          />
+        </div>
+      </>
     )
   );
 }

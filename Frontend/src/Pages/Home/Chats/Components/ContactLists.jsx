@@ -52,45 +52,41 @@ export default function ContactLists() {
   }, [getContacts, getToken, navigate]);
 
   const containerRef = useRef(null);
+  if (contacts?.length === 0) return <NoContactDisplay />;
   return (
-    <div>
-      {contacts?.length === 0 && <NoContactDisplay />}
-      {contacts?.length !== 0 && (
-        <div
-          className="max-h-[512px] overflow-y-scroll"
-          ref={containerRef}
-          onContextMenu={(e) => {
-            if (globalContextMenu) {
-              setGlobalContextMenu(false);
-              return;
-            }
-            e.preventDefault();
-            if (e.target.closest(".contact") !== null) {
-              setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
-              setGlobalContextMenu(true);
-              e.stopPropagation();
-            }
-          }}
-        >
-          {contacts.map((data) => {
-            let contactUser;
-            if (data.contactId == user.id) {
-              contactUser = data.user;
-            } else contactUser = data.contactUser;
+    <div
+      className="overflow-y-auto flex-1"
+      ref={containerRef}
+      onContextMenu={(e) => {
+        if (globalContextMenu) {
+          setGlobalContextMenu(false);
+          return;
+        }
+        e.preventDefault();
+        if (e.target.closest(".contact") !== null) {
+          setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+          setGlobalContextMenu(true);
+          e.stopPropagation();
+        }
+      }}
+    >
+      {contacts.map((data) => {
+        let contactUser;
+        if (data.contactId == user.id) {
+          contactUser = data.user;
+        } else contactUser = data.contactUser;
 
-            return (
-              <Contact
-                isActive={true}
-                key={data.id}
-                contactId={data.id}
-                contactName={contactUser.displayName}
-              />
-            );
-          })}
+        return (
+          <Contact
+            isActive={true}
+            key={data.id}
+            contactId={data.id}
+            contactName={contactUser.displayName}
+          />
+        );
+      })}
 
-          <ContactContextMenu contextMenu={contextMenu} />
-        </div>
-      )}
+      <ContactContextMenu contextMenu={contextMenu} />
     </div>
   );
 }

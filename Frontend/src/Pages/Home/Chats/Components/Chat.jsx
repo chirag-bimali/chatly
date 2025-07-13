@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import AppContext from "../../../../Context/AppContext";
 import MessageContextMenu from "./MessageContextMenu";
 import AuthContext from "../../../../Context/AuthContext";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Chat({
   imgSrc,
@@ -33,6 +34,7 @@ export default function Chat({
       className={`chat ${
         message.senderId === currUser.id ? "chat-end" : "chat-start"
       }`}
+      data-message-id={message.id}
     >
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
@@ -65,21 +67,41 @@ export default function Chat({
         }}
       >
         <div>
-          <div
-            className={`px-2 py-2 bg-slate-400 flex flex-col mb-1 ${
-              message.senderId === currUser.id
-                ? "rounded-r-sm border-l-4"
-                : " rounded-l-sm border-r-4"
-            }`}
-          >
-            <p className="text-xs text-slate-300 font-medium">John doe</p>
-            <p className="text-xs text-slate-800">Hello this is chirag bimali</p>
-          </div>
-          <p className="text-sm text-slate-600">
+          {/* Reply Message Area */}
+          {console.log(message?.replyMessage)}
+
+          {message?.replyMessage?.id && (
+            <div
+              className={`px-2 py-2 bg-slate-400 flex flex-col mb-1 ${
+                message.senderId === currUser.id
+                  ? "rounded-r-sm border-l-4"
+                  : " rounded-l-sm border-r-4"
+              }`}
+            >
+              <p className="text-xs text-slate-300 font-medium">
+                {console.log(message)}
+                {message?.replyMessage?.previousSender?.displayName}
+              </p>
+              <p className="text-xs text-slate-800">
+                {
+                  message?.replyMessage?.previousContent
+                }
+              </p>
+            </div>
+          )}
+          <p className="text-sm text-slate-600 mb-2">
             {message?.content ? message?.content : "Sent you a message"}
           </p>
           <div>
-            <p className={`text-xs opacity-40 ${message.senderId === currUser.id ? "text-left" : "text-right"}`}>10:00 PM</p>
+            <p
+              className={`text-xs opacity-40 ${
+                message.senderId === currUser.id ? "text-left" : "text-right"
+              }`}
+            >
+              {formatDistanceToNow(new Date(message.createdAt), {
+                addSuffix: true,
+              })}
+            </p>
           </div>
         </div>
         <MessageContextMenu contextMenu={contextMenu} />

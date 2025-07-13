@@ -4,6 +4,7 @@ using Chatly.Interfaces.Repositories;
 using Chatly.Models;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Chatly.Repositories;
 
@@ -54,7 +55,7 @@ public class MessageRepository : IMessageRepository
         }
 
         var messageToBeForwarded =
-            await _dbContext.Messages.FirstOrDefaultAsync(x => x.Id == forwardMessageId);
+            await _dbContext.Messages.Include(f => f.Sender).FirstOrDefaultAsync(x => x.Id == forwardMessageId);
 
         if (messageToBeForwarded != null &&
             messageToBeForwarded.ContactId == contact.Id
@@ -80,6 +81,7 @@ public class MessageRepository : IMessageRepository
             Id = Guid.NewGuid().ToString(),
             ContactId = contact.Id,
             SenderId = sender.Id,
+            Sender = sender,
             Content = content,
             CreatedAt = DateTime.Now,
         };
@@ -94,7 +96,8 @@ public class MessageRepository : IMessageRepository
                 Id = Guid.NewGuid().ToString(),
                 MessageId = newMessage.Id,
                 PreviousContent = replyToMessage.Content,
-                PreviousSenderId = replyToMessage.SenderId
+                PreviousSenderId = replyToMessage.SenderId,
+                PreviousSender = replyToMessage.Sender,
             };
             newMessage.IsReply = true;
             await _dbContext.ReplyMessages.AddAsync(newReplyMessage);
@@ -108,7 +111,8 @@ public class MessageRepository : IMessageRepository
                 MessageId = newMessage.Id,
                 SubContent = content,
                 PreviousContactId = messageToBeForwarded.ContactId,
-                PreviousSenderId = messageToBeForwarded.SenderId
+                PreviousSenderId = messageToBeForwarded.SenderId,
+                PreviousSender = messageToBeForwarded.Sender,
             };
             newMessage.Content = messageToBeForwarded.Content;
             newMessage.ContactId = contactId;
@@ -149,11 +153,13 @@ public class MessageRepository : IMessageRepository
         var count = await _dbContext.Messages.Where(x => x.ContactId == contactId).CountAsync();
         var queryable = _dbContext.Messages
             .Include(x => x.ForwardMessage)
+            .ThenInclude(f => f != null ? f.PreviousSender : null)
             .Include(x => x.ReplyMessage)
+            .ThenInclude(r => r != null ? r.PreviousSender : null)
             .OrderByDescending(c => c.CreatedAt)
             .Where(c => c.ContactId == contactId).Skip(skip).Take(take)
             .OrderBy(c => c.CreatedAt);
-        var replyMessages = await queryable.ToListAsync();
+        Console.WriteLine(await queryable.CountAsync());
         return (await queryable.ToListAsync(), count);
     }
 

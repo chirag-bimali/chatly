@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AppContext from "../Context/AppContext";
 
 export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
+  const [replyModeOn, setReplyModeOn] = useState(false);
+  const replyIdRef = useRef(null);
 
   useEffect(() => {
     const handleClick = () => {
@@ -27,7 +29,15 @@ export default function AppProvider({ children }) {
   }, [globalContextMenu]);
 
   return (
-    <AppContext.Provider value={{ globalContextMenu, setGlobalContextMenu }}>
+    <AppContext.Provider
+      value={{
+        globalContextMenu,
+        setGlobalContextMenu,
+        replyModeOn,
+        setReplyModeOn,
+        replyIdRef
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

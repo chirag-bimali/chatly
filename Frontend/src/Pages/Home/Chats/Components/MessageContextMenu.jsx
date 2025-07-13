@@ -4,8 +4,13 @@ import CopyIcon from "../../../../assets/copy-icon.svg?react";
 import DeleteIcon from "../../../../assets/delete-icon.svg?react";
 import ForwardIcon from "../../../../assets/forward-icon.svg?react";
 import ReplyIcon from "../../../../assets/reply-icon.svg?react";
+import AppProvider from "../../../../Providers/AppProvider";
+import { useContext } from "react";
+import AppContext from "../../../../Context/AppContext";
 
 export default function MessageContextMenu({ contextMenu }) {
+  const { replyIdRef, setReplyModeOn } = useContext(AppContext);
+
   if (!contextMenu.visible) return null;
 
   return (
@@ -19,7 +24,11 @@ export default function MessageContextMenu({ contextMenu }) {
       <MessageContextMenuOption
         icon={ReplyIcon}
         label={"Reply"}
-        onClick={() => {}}
+        onClick={(e) => {
+          const el = e.target.closest(".chat");
+          replyIdRef.current = el.dataset.messageId
+          setReplyModeOn(true);
+        }}
       />
       <MessageContextMenuOption
         icon={CopyIcon}

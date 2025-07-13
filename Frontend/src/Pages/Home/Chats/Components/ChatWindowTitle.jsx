@@ -7,7 +7,6 @@ import AuthContext from "../../../../Context/AuthContext";
 export default function ChatWindowTitle({
   contactUserDetails,
 }) {
-  console.log(contactUserDetails)
   return (
     <div className="flex items-center justify-between">
       <div>

@@ -38,7 +38,6 @@ export default function ChatsWindowBody({
     (async function () {
       try {
         const contactId = contactDetails?.id;
-        console.log(contactDetails);
         const response = await getMessages({
           contactId,
           token: getToken(),

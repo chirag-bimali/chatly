@@ -1,3 +1,4 @@
+using Backend.Mappers;
 using Chatly.DTO.Messages;
 using Chatly.Models;
 
@@ -24,6 +25,7 @@ public static class MessageToMessageResponseExtension
             ContactId = message.ContactId,
             Content = message.Content,
             SenderId = message.SenderId,
+            CreatedAt = message.CreatedAt,
             ForwardMessage = message.ForwardMessage?.ToForwardMessageResponseDto(),
             ReplyMessage = message.ReplyMessage?.ToReplyMessageResponseDto()
         };
@@ -35,7 +37,7 @@ public static class MessageToMessageResponseExtension
         {
             Id = message.Id,
             PreviousContactId = message.PreviousContactId,
-            PreviousSenderId = message.PreviousSenderId,
+            PreviousSender = message.PreviousSender?.ToUserDtoFromUser(),
             SubContent = message.SubContent
         };
     }
@@ -47,6 +49,7 @@ public static class MessageToMessageResponseExtension
             Id = message.Id,
             PreviousSenderId = message.PreviousSenderId,
             PreviousContent = message.PreviousContent,
+            PreviousSender = message.PreviousSender?.ToUserDtoFromUser()
         };
     }
 }

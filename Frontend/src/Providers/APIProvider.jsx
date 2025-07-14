@@ -98,6 +98,7 @@ export default function APIProvider({ children }) {
         UserId: userId,
       },
     });
+    console.log(response.data.data);
     return response.data;
   }, []);
   const getMessages = useCallback(async function ({
@@ -149,13 +150,17 @@ export default function APIProvider({ children }) {
     return response.data;
   },
   []);
-
-  const blockUser = useCallback(async function ({ contactId, token }) {
-    let route = `${API_ROUTE}/contacts/block`;
+  const changeContactStatus = useCallback(async function ({
+    contactId,
+    status,
+    token,
+  }) {
+    let route = `${API_ROUTE}/contacts/status`;
     let response = await axios.patch(
       route,
       {
         ContactId: contactId,
+        ContactStatus: status,
       },
       {
         headers: {
@@ -164,7 +169,9 @@ export default function APIProvider({ children }) {
       }
     );
     return response.data;
-  }, []);
+  },
+  []);
+
   return (
     <APIContext.Provider
       value={{
@@ -175,7 +182,7 @@ export default function APIProvider({ children }) {
         getMessages,
         sendMessage,
         createContact,
-        blockUser,
+        changeContactStatus,
       }}
     >
       {children}

@@ -24,6 +24,9 @@ namespace Chatly.Mappers
                 ContactId = data.ContactId,
                 ContactUser = data.ContactUser?.ToUserDtoFromUser(),
 
+                ActorId = data.ActorId,
+                Actor = data.Actor?.ToUserDtoFromUser(),
+
                 Status = data.Status.ToString(),
                 CreatedAt = data.CreatedAt,
                 Mutated = data.Mutated,

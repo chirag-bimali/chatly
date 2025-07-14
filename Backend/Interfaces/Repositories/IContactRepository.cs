@@ -20,6 +20,9 @@ public interface IContactRepository
         int? unreadCount = null
     );
 
+    public Task<Contact> UpdateContactStatus(string? contactId = null, string? userId = null,
+        string? contactStatus = null);
+
     public Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,

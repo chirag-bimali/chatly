@@ -18,7 +18,15 @@ export default function MessageInputField({
   const [chatContent, setChatContent] = useState("");
   const contactId = chatDetails.id;
   const currUser = getUser();
+
+  const disable =
+    draftMode ||
+    chatDetails?.status === "Blocked" ||
+    (chatDetails?.status === "Pending" &&
+      contactUserDetails.id === chatDetails.actorId);
+
   async function handleSubmit(e) {
+    if (disable) return;
     e.preventDefault();
     try {
       const response = await sendMessage({
@@ -78,7 +86,7 @@ export default function MessageInputField({
                   name="message-content"
                   required
                   value={chatContent}
-                  disabled={draftMode || chatDetails.status === "Blocked"}
+                  disabled={disable}
                   onChange={(e) => setChatContent(e.target.value)}
                   autoComplete="off"
                 />
@@ -86,7 +94,7 @@ export default function MessageInputField({
             </div>
             <button
               className={`btn btn-primary min-w-[5.25rem] h-fit w-fit join-item text-sm items-center justify-center rounded-full py-1.5 px-4`}
-              disabled={draftMode || chatDetails.status === "Blocked"}
+              disabled={disable}
             >
               <span className="self-center text-sm font-normal max-h-min">
                 Send

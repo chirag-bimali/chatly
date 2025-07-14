@@ -95,6 +95,7 @@ public class ContactRepository : IContactRepository
                 User = currUser,
                 Status = ContactStatus.None,
                 CreatedAt = DateTime.Now,
+                ActorId = null,
                 ChatDeleted = false,
                 Mutated = false,
                 Archived = false,
@@ -165,6 +166,59 @@ public class ContactRepository : IContactRepository
         return contact;
     }
 
+    public async Task<Contact> UpdateContactStatus(string? contactId = null, string? userId = null,
+        string? contactStatus = null)
+    {
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(c =>
+            (c.Id == contactId) && (c.UserId == userId || c.ContactId == userId));
+        if (contact == null)
+            throw new NotFoundException("Contact not found");
+
+        if (!Enum.TryParse<ContactStatus>(contactStatus, ignoreCase: true, out var status))
+            throw new ApplicationArgumentException("Invalid contact status to update", nameof(contactStatus));
+
+
+        //  Send Request
+        if (contact.Status == ContactStatus.None && !(status == ContactStatus.Accepted || status == ContactStatus.None))
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+
+        if (contact.Status == ContactStatus.Pending && status == ContactStatus.Accepted && contact.ActorId != userId)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Pending && status == ContactStatus.Blocked)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Accepted &&
+            !(status == ContactStatus.Accepted || status == ContactStatus.Pending))
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Blocked && status == ContactStatus.None && contact.ActorId == userId)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        var actor = await _dbContext.Users.FirstOrDefaultAsync(c => c.Id == contact.ActorId);
+        contact.Actor = actor;
+
+        _dbContext.Update(contact);
+        await _dbContext.SaveChangesAsync();
+        return contact;
+    }
+
     public async Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,
@@ -184,6 +238,7 @@ public class ContactRepository : IContactRepository
 
         Contact? contact = null;
         contact = await queryable
+            .Include(c => c.Actor)
             .FirstOrDefaultAsync(c => c.Id == contactId);
 
 
@@ -218,8 +273,6 @@ public class ContactRepository : IContactRepository
             );
         }
 
-        Console.WriteLine(contactUserId);
-        Console.WriteLine(userId);
 
         return contact ?? throw error;
     }

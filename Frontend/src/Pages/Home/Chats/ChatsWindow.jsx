@@ -17,8 +17,14 @@ export default function ChatsWindow() {
   const [messages, setMessages] = useState([]);
   const [draftMode, setDraftMode] = useState(true);
 
-  const { getContact, getUserById, createContact, blockUser } =
-    useContext(APIContext);
+  const currUser = getUser();
+
+  const {
+    getContact,
+    getUserById,
+    createContact,
+    changeContactStatus,
+  } = useContext(APIContext);
   const [chatDetails, setChatDetails] = useState({});
   const [contactUserDetails, setContactUserDetails] = useState({});
   const messageUpdateReason = useRef("initial");
@@ -92,42 +98,78 @@ export default function ChatsWindow() {
   }, [chatId, getContact, getToken, navigate, draftMode, getUser]);
 
   async function handleAddToContact() {
-    if (!draftMode) return;
-
     try {
-      let response = await createContact({
-        contactUserId: contactUserDetails.id,
+      if (!chatDetails.id) {
+        // Create
+        const response = await createContact({
+          contactUserId: contactUserDetails.id,
+          token: getToken(),
+        });
+        // Make Pending
+        changeContactStatus({
+          contactId: response.data.id,
+          status: "Pending",
+          token: getToken(),
+        });
+
+        setChatDetails(response.data);
+        navigate(`/chat/${response.data.id}`);
+        return;
+      }
+
+      // Make Accepted
+      if (
+        chatDetails.status === "Pending" &&
+        chatDetails.actorId === contactUserDetails.id
+      ) {
+        const response = await changeContactStatus({
+          contactId: chatDetails.id,
+          status: "Accepted",
+          token: getToken(),
+        });
+        setChatDetails(response.data);
+        return;
+      }
+      // Make pending
+      const response = await changeContactStatus({
+        contactId: chatDetails.id,
+        status: "Pending",
         token: getToken(),
       });
-      console.log(response.data);
-      navigate(`/chat/${response.data.id}`);
+      setChatDetails(response.data);
     } catch (e) {
       console.error(e);
     }
   }
   async function handleBlock() {
     try {
-      if (chatDetails.id) {
-        const blockResponse = await blockUser({
-          contactId: chatDetails.id,
-          token: getToken(),
-        });
-        console.log(blockResponse);
-        //
-      } else {
-        // create contact
-        console.log(contactUserDetails);
-        var createResponse = await createContact({
+      if (!chatDetails.id) {
+        // Create Contact
+        const response = await createContact({
           contactUserId: contactUserDetails.id,
           token: getToken(),
         });
-        setChatDetails(createResponse.data);
-
-        const blockResponse = await blockUser({
-          contactId: createResponse.data.id,
+        // Make Blocked
+        changeContactStatus({
+          contactId: response.data.id,
+          status: "Blocked",
           token: getToken(),
         });
-        console.log(blockResponse);
+
+        setChatDetails(response.data);
+        navigate(`/chat/${response.data.id}`);
+        return;
+      }
+
+      // Make Blocked
+      if (chatDetails.status !== "Blocked") {
+        const response = await changeContactStatus({
+          contactId: chatDetails.id,
+          status: "Blocked",
+          token: getToken(),
+        });
+        setChatDetails(response.data);
+        return;
       }
     } catch (e) {
       console.error(e);
@@ -179,11 +221,49 @@ export default function ChatsWindow() {
               </div>
             </div>
           )}
-          {chatDetails.status === "Blocked" && (
+          {console.log(chatDetails.status)}
+          {console.log(chatDetails.actorId, chatDetails.actor.userName)}
+          {console.log(contactUserDetails.id, contactUserDetails.userName)}
+          {chatDetails.status === "None" ||
+            (chatDetails.status === "Pending" &&
+              chatDetails.actorId !== currUser.id && (
+                <div className="absolute w-full bottom-full py-8">
+                  <div className="w-full flex flex-col items-center gap-4">
+                    <div className="w-full prose prose-p:text-4xl prose-p:font-bold mb-5">
+                      <p className="text-center">Say Hi 👋👋</p>
+                    </div>
+                    <div className="w-full prose prose-p:text-xs">
+                      <p className="text-center">
+                        Start chatting by adding user to contact
+                      </p>
+                    </div>
+                    <div className="w-full flex gap-12 items-center justify-center">
+                      <button
+                        className="btn btn-sm btn-error btn-outline w-52"
+                        onClick={(e) => handleBlock(e)}
+                      >
+                        Block
+                      </button>
+                      <button
+                        className="btn btn-sm btn-accent btn-outline w-52"
+                        onClick={(e) => handleAddToContact(e)}
+                      >
+                        Add to Contact
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+          {chatDetails?.status === "Blocked" && (
             <div className="absolute w-full bottom-full py-8">
               <div className="w-full flex flex-col items-center gap-4">
                 <div className="w-full prose prose-p:text-xs">
-                  <p className="text-center">You are blocked.</p>
+                  <p className="text-center">
+                    {chatDetails?.actorId === contactUserDetails.id
+                      ? "You have been blocked"
+                      : "You blocked this contact"}
+                  </p>
                 </div>
               </div>
             </div>

@@ -8,7 +8,7 @@ public enum ContactStatus
     None,
     Pending, // pending
     Accepted, // accepted
-    Blocked,  // blocked
+    Blocked, // blocked
     Deleted
 }
 
@@ -25,7 +25,10 @@ public class Contact
     public bool Archived { get; set; }
     public int UnreadCount { get; set; }
 
-    [ForeignKey(nameof(UserId))] public User? User { get; set; }
+    public string? ActorId { get; set; }
 
+
+    [ForeignKey(nameof(UserId))] public User? User { get; set; }
     [ForeignKey(nameof(ContactId))] public User? ContactUser { get; set; }
+    [ForeignKey(nameof(ActorId))] public User? Actor { get; set; }
 }

@@ -11,6 +11,7 @@ using Chatly.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Controllers;
@@ -194,9 +195,9 @@ public class ContactsController : ControllerBase
     }
 
 
-    [HttpPatch("request/{contactId}")]
-    public async Task<IActionResult> ModifyRequest([FromRoute] string contactId,
-        [FromBody] AcceptRequestRequestDto request)
+    [HttpPatch("status/")]
+    public async Task<IActionResult> ContactStatus(
+        [FromBody] ContactStatusRequestDto request)
     {
         try
         {
@@ -206,68 +207,14 @@ public class ContactsController : ControllerBase
                 throw new ApplicationUnauthorizedAccessException("User not logged in", "The user id is null");
             }
 
-            var contact = await _contactRepository.GetAsync(contactId);
-            if (contact == null)
-            {
-                throw new NotFoundException("Contact not found");
-            }
 
-            if (contact.Status != ContactStatus.Pending)
-            {
-                throw new ConflictException("Unable to accept contact", "Request is not pending");
-            }
+            var contact = await _contactRepository.UpdateContactStatus(request.ContactId, userId: currUser,
+                contactStatus: request.ContactStatus);
 
-            contact = await _contactRepository.UpdateAsync(contactId: contact.Id,
-                contactStatus: request.IsAccepted ? ContactStatus.Accepted : ContactStatus.None);
 
-            return Accepted(ApiResponse<AcceptRequestResponseDto>.SuccessResponse(new AcceptRequestResponseDto
-
-                {
-                    ContactId = contact.Id,
-                },
-                contact.Status == ContactStatus.Accepted
-                    ? "Request accepted successfully"
-                    : "Request rejected successfully", null,
-                StatusCodes.Status200OK));
-        }
-        catch (NotFoundException e)
-        {
-            return NotFound(
-                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
-        }
-        catch (ConflictException e)
-        {
-            return Conflict(
-                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
-        }
-        catch (InternalServerException e)
-        {
-            return this.InternalServerError(
-                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
-        }
-    }
-
-    [HttpPatch("block")]
-    [Authorize]
-    public async Task<IActionResult> Block([FromBody] BlockRequestDto request)
-    {
-        try
-        {
-            var currUserId = User.GetUserId();
-            var currUserName = User.GetUserName();
-            if (currUserId == null || currUserName == null)
-            {
-                throw new ApplicationUnauthorizedAccessException("User not logged in", "The user id is null");
-            }
-
-            var contact =
-                await _contactRepository.UpdateAsync(request.ContactId, contactStatus: ContactStatus.Blocked);
-
-            return Accepted(ApiResponse<BlockResponseDto>.SuccessResponse(new BlockResponseDto
-                {
-                    ContactId = contact.Id,
-                }, request.IsBlocked ? "Blocked successfully" : "Unblocked successfully", null,
-                StatusCodes.Status200OK));
+            return Accepted(ApiResponse<ContactDto>.SuccessResponse(contact.ToContactsDtoFromContact()
+                , null,
+                null, StatusCodes.Status202Accepted));
         }
         catch (NotFoundException e)
         {
@@ -284,10 +231,59 @@ public class ContactsController : ControllerBase
             return Unauthorized(
                 ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
         }
+        catch (ApplicationArgumentException e)
+        {
+            return BadRequest(
+                ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+        }
         catch (InternalServerException e)
         {
             return this.InternalServerError(
                 ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
         }
     }
+
+    // [HttpPatch("block")]
+    // [Authorize]
+    // public async Task<IActionResult> Block([FromBody] BlockRequestDto request)
+    // {
+    //     try
+    //     {
+    //         var currUserId = User.GetUserId();
+    //         var currUserName = User.GetUserName();
+    //         if (currUserId == null || currUserName == null)
+    //         {
+    //             throw new ApplicationUnauthorizedAccessException("User not logged in", "The user id is null");
+    //         }
+    //
+    //         var contact =
+    //             await _contactRepository.UpdateAsync(request.ContactId, contactStatus: ContactStatus.Blocked);
+    //
+    //         return Accepted(ApiResponse<BlockResponseDto>.SuccessResponse(new BlockResponseDto
+    //             {
+    //                 ContactId = contact.Id,
+    //             }, request.IsBlocked ? "Blocked successfully" : "Unblocked successfully", null,
+    //             StatusCodes.Status200OK));
+    //     }
+    //     catch (NotFoundException e)
+    //     {
+    //         return NotFound(
+    //             ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+    //     }
+    //     catch (ConflictException e)
+    //     {
+    //         return Conflict(
+    //             ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+    //     }
+    //     catch (ApplicationUnauthorizedAccessException e)
+    //     {
+    //         return Unauthorized(
+    //             ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+    //     }
+    //     catch (InternalServerException e)
+    //     {
+    //         return this.InternalServerError(
+    //             ApiResponse<object>.ErrorResponse(e.Message, e.StatusCode, e.ErrorCode, e.Details, e.Errors));
+    //     }
+    // }
 }

@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Chatly.DTO.Accounts;
 
-namespace Backend.DTO.Contacts;
+namespace Chatly.DTO.Contacts;
 
 public class GetContactUserRequestDto
 {

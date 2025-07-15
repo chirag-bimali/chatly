@@ -8,6 +8,8 @@ import APIContext from "../../../Context/APIContext";
 import AuthContext from "../../../Context/AuthContext";
 
 import { useNavigate, useParams } from "react-router-dom";
+import ForwardMessageUserList from "./Components/ForwardMessageUserList";
+import AppContext from "../../../Context/AppContext";
 
 export default function ChatsWindow() {
   const { chatId, userId } = useParams();
@@ -19,12 +21,9 @@ export default function ChatsWindow() {
 
   const currUser = getUser();
 
-  const {
-    getContact,
-    getUserById,
-    createContact,
-    changeContactStatus,
-  } = useContext(APIContext);
+  const { getContact, getUserById, createContact, changeContactStatus } =
+    useContext(APIContext);
+  const { forwardModeOn } = useContext(AppContext);
   const [chatDetails, setChatDetails] = useState({});
   const [contactUserDetails, setContactUserDetails] = useState({});
   const messageUpdateReason = useRef("initial");
@@ -183,7 +182,7 @@ export default function ChatsWindow() {
           draftMode={draftMode}
           contactUserDetails={contactUserDetails}
         />
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden relative">
           <ChatsWindowBody
             contactDetails={chatDetails}
             messages={messages}
@@ -191,7 +190,13 @@ export default function ChatsWindow() {
             messageUpdateReason={messageUpdateReason}
             contactUserDetails={contactUserDetails}
           />
+          {forwardModeOn && (
+            <div className="absolute top-0 left-0 h-full w-full">
+              <ForwardMessageUserList />
+            </div>
+          )}
         </div>
+
         <div className="relative">
           {draftMode && (
             <div className="absolute w-full bottom-full py-8">
@@ -221,39 +226,38 @@ export default function ChatsWindow() {
               </div>
             </div>
           )}
-          {console.log(chatDetails.status)}
-          {console.log(chatDetails.actorId, chatDetails.actor.userName)}
-          {console.log(contactUserDetails.id, contactUserDetails.userName)}
-          {chatDetails.status === "None" ||
-            (chatDetails.status === "Pending" &&
-              chatDetails.actorId !== currUser.id && (
-                <div className="absolute w-full bottom-full py-8">
-                  <div className="w-full flex flex-col items-center gap-4">
-                    <div className="w-full prose prose-p:text-4xl prose-p:font-bold mb-5">
-                      <p className="text-center">Say Hi 👋👋</p>
-                    </div>
-                    <div className="w-full prose prose-p:text-xs">
-                      <p className="text-center">
-                        Start chatting by adding user to contact
-                      </p>
-                    </div>
-                    <div className="w-full flex gap-12 items-center justify-center">
-                      <button
-                        className="btn btn-sm btn-error btn-outline w-52"
-                        onClick={(e) => handleBlock(e)}
-                      >
-                        Block
-                      </button>
-                      <button
-                        className="btn btn-sm btn-accent btn-outline w-52"
-                        onClick={(e) => handleAddToContact(e)}
-                      >
-                        Add to Contact
-                      </button>
-                    </div>
+          {(chatDetails?.status === "None" ||
+            (chatDetails?.status === "Pending" &&
+              chatDetails?.actorId !== currUser.id)) && (
+            <div className="absolute w-full bottom-full py-8">
+              <div className="w-full flex flex-col items-center gap-4">
+                {draftMode && (
+                  <div className="w-full prose prose-p:text-4xl prose-p:font-bold mb-5">
+                    <p className="text-center">Say Hi 👋👋</p>
                   </div>
+                )}
+                <div className="w-full prose prose-p:text-xs">
+                  <p className="text-center">
+                    Start chatting by adding user to contact
+                  </p>
                 </div>
-              ))}
+                <div className="w-full flex gap-12 items-center justify-center">
+                  <button
+                    className="btn btn-sm btn-error btn-outline w-52"
+                    onClick={(e) => handleBlock(e)}
+                  >
+                    Block
+                  </button>
+                  <button
+                    className="btn btn-sm btn-accent btn-outline w-52"
+                    onClick={(e) => handleAddToContact(e)}
+                  >
+                    Add to Contact
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {chatDetails?.status === "Blocked" && (
             <div className="absolute w-full bottom-full py-8">

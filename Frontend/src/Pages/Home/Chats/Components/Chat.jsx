@@ -27,7 +27,6 @@ export default function Chat({
     }
   }, [globalContextMenu]);
   const currUser = getUser();
-  const contactUser = contactUserDetails;
 
   return (
     <div
@@ -68,8 +67,6 @@ export default function Chat({
       >
         <div>
           {/* Reply Message Area */}
-          {console.log(message?.replyMessage)}
-
           {message?.replyMessage?.id && (
             <div
               className={`px-2 py-2 bg-slate-400 flex flex-col mb-1 ${

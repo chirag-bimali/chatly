@@ -11,16 +11,9 @@ import NoChatSelection from "./Components/NoChatSelection";
 import SearchList from "./Components/SearchList";
 export default function ChatEnvironment() {
   // only loads contact onetime
-  const { getContacts } = useContext(APIContext);
-  const { getToken } = useContext(AuthContext);
   const [searchMode, setSearchMode] = useState(false);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    (async function () {
-      await getContacts(1, 10, getToken());
-    })();
-  }, [getContacts, getToken]);
 
   async function handleSearch(e) {
     if (!e.target.value) {

@@ -10,7 +10,12 @@ import { useCallback } from "react";
 let API_ROUTE = "http://localhost:5280/api";
 
 export default function APIProvider({ children }) {
-  async function searchUsers(query = "", page = 1, pageSize = 5, token = "") {
+  async function searchUsers({
+    query = "",
+    page = 1,
+    pageSize = 5,
+    token = "",
+  }) {
     try {
       let route = `${API_ROUTE}/Users/Search`;
       let response = await axios.get(route, {
@@ -48,23 +53,25 @@ export default function APIProvider({ children }) {
     });
     return response.data;
   }, []);
-  const getContacts = useCallback(async function (
+  const getContacts = useCallback(async function ({
+    query = null,
     page = 1,
     pageSize = 10,
-    token = ""
-  ) {
+    token = "",
+  }) {
     try {
       const route = `${API_ROUTE}/contacts/all`;
       const response = await axios.get(route, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        param: {
+        params: {
+          Query: query,
           Page: page,
           PageSize: pageSize,
         },
       });
-      return response?.data?.data;
+      return response?.data;
     } catch (e) {
       console.error(e);
       throw e;
@@ -73,7 +80,6 @@ export default function APIProvider({ children }) {
   []);
   const createContact = useCallback(async function ({ contactUserId, token }) {
     const route = `${API_ROUTE}/contacts`;
-    console.log(contactUserId);
     let response = await axios.post(
       route,
       {
@@ -98,7 +104,6 @@ export default function APIProvider({ children }) {
         UserId: userId,
       },
     });
-    console.log(response.data.data);
     return response.data;
   }, []);
   const getMessages = useCallback(async function ({

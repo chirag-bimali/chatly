@@ -41,8 +41,8 @@ export default function ContactLists() {
   useEffect(() => {
     (async function () {
       try {
-        let c = await getContacts(1, 10000, getToken());
-        setContacts(c);
+        let response = await getContacts({ page: 1, pageSize: 10000, token: getToken() });
+        setContacts(response.data);
       } catch (e) {
         if (e instanceof AuthenticationError) {
           navigate("/login");

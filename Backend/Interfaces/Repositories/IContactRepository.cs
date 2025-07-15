@@ -35,6 +35,7 @@ public interface IContactRepository
         string? userId = null,
         int page = 1,
         int pageSize = 10,
+        string? query = null,
         bool excludeBlocked = true,
         bool excludeNone = true,
         bool onlyBlocked = true,

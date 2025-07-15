@@ -281,6 +281,7 @@ public class ContactRepository : IContactRepository
         string? userId = null,
         int page = 1,
         int pageSize = 10,
+        string? query = null,
         bool excludeBlocked = true,
         bool excludeNone = true,
         bool onlyBlocked = false,
@@ -290,10 +291,33 @@ public class ContactRepository : IContactRepository
     {
         try
         {
-            var queryable = _dbContext.Contacts.Where(x =>
-                (x.UserId == userId || x.ContactId == userId)
-            );
-            // return (queryable.ToList(), 3);
+            var queryable = _dbContext.Contacts
+                .Include(c => c.User)
+                .Include(c => c.ContactUser)
+                .Where(x =>
+                    (x.UserId == userId || x.ContactId == userId)
+                );
+            
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine(query);
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            if (!string.IsNullOrEmpty(query))
+            {
+                queryable = queryable.Where(c =>
+                    (c.User != null && c.ContactUser != null) &&
+                    (
+                        (c.UserId == userId && EF.Functions.Like(c.ContactUser.NormalizedUserName, $"%{query}%")) ||
+                        (c.ContactId == userId && EF.Functions.Like(c.User.NormalizedUserName, $"%{query}%"))
+                    )
+                );
+            }
+
             if (onlyBlocked)
             {
                 queryable = queryable.Where(x => x.Status == ContactStatus.Blocked);
@@ -315,7 +339,7 @@ public class ContactRepository : IContactRepository
             }
 
             var contactsCounts = await queryable.CountAsync();
-            queryable = queryable.Include(c => c.User).Include(c => c.ContactUser).Skip((page - 1) * pageSize)
+            queryable = queryable.Skip((page - 1) * pageSize)
                 .Take(pageSize);
             var contacts = await queryable.ToListAsync();
 

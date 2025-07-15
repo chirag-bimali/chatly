@@ -1,4 +1,3 @@
-using Backend.DTO.Contacts;
 using Backend.Mappers;
 using Chatly.DTO;
 using Chatly.DTO.Contacts;
@@ -124,7 +123,7 @@ public class ContactsController : ControllerBase
                 throw new ApplicationUnauthorizedAccessException("User not logged in", "The user id is null");
             }
 
-            var (contactList, count) = await _contactRepository.GetAllAsync(curUser, request.Page, request.PageSize,
+            var (contactList, count) = await _contactRepository.GetAllAsync(curUser, request.Page, request.PageSize, request.Query,
                 excludeBlocked: false, excludeNone: false, onlyBlocked: false, onlyNone: false);
 
             var contactListDto = contactList.Select(c => c.ToContactsDtoFromContact()).ToList();
@@ -158,7 +157,6 @@ public class ContactsController : ControllerBase
                 throw new ApplicationUnauthorizedAccessException("User not logged in", "The user id is null");
             }
 
-            Console.WriteLine(request.ContactId);
             var contact = await _contactRepository.GetAsync(contactId: request.ContactId);
 
             if (contact is null) return Ok();
@@ -174,7 +172,6 @@ public class ContactsController : ControllerBase
             else
                 contactUserdto.ContactUser = contact.User?.ToUserDtoFromUser();
 
-            Console.WriteLine(contact.ContactUser?.DisplayName);
 
             return Ok(ApiResponse<ContactUserDto>.SuccessResponse(
                 data: contactUserdto,

@@ -9,7 +9,8 @@ import { useContext } from "react";
 import AppContext from "../../../../Context/AppContext";
 
 export default function MessageContextMenu({ contextMenu }) {
-  const { replyIdRef, setReplyModeOn } = useContext(AppContext);
+  const { replyIdRef, setReplyModeOn, setForwardModeOn, forwardIdRef } =
+    useContext(AppContext);
 
   if (!contextMenu.visible) return null;
 
@@ -26,7 +27,7 @@ export default function MessageContextMenu({ contextMenu }) {
         label={"Reply"}
         onClick={(e) => {
           const el = e.target.closest(".chat");
-          replyIdRef.current = el.dataset.messageId
+          replyIdRef.current = el.dataset.messageId;
           setReplyModeOn(true);
         }}
       />
@@ -38,7 +39,11 @@ export default function MessageContextMenu({ contextMenu }) {
       <MessageContextMenuOption
         icon={ForwardIcon}
         label={"Forward"}
-        onClick={() => {}}
+        onClick={(e) => {
+          const el = e.target.closest(".chat");
+          forwardIdRef.current = el.dataset.messageId;
+          setForwardModeOn(true);
+        }}
       />
       <MessageContextMenuOption
         icon={DeleteIcon}

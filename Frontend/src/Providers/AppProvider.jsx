@@ -4,7 +4,9 @@ import AppContext from "../Context/AppContext";
 export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
   const [replyModeOn, setReplyModeOn] = useState(false);
+  const [forwardModeOn, setForwardModeOn] = useState(false);
   const replyIdRef = useRef(null);
+  const forwardIdRef = useRef(null);
 
   useEffect(() => {
     const handleClick = () => {
@@ -35,7 +37,10 @@ export default function AppProvider({ children }) {
         setGlobalContextMenu,
         replyModeOn,
         setReplyModeOn,
-        replyIdRef
+        replyIdRef,
+        forwardModeOn,
+        setForwardModeOn,
+        forwardIdRef,
       }}
     >
       {children}

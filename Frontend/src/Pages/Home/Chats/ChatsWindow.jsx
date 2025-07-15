@@ -9,6 +9,7 @@ import AuthContext from "../../../Context/AuthContext";
 
 import { useNavigate, useParams } from "react-router-dom";
 import ForwardMessageUserList from "./Components/ForwardMessageUserList";
+import AppContext from "../../../Context/AppContext";
 
 export default function ChatsWindow() {
   const { chatId, userId } = useParams();
@@ -22,6 +23,7 @@ export default function ChatsWindow() {
 
   const { getContact, getUserById, createContact, changeContactStatus } =
     useContext(APIContext);
+  const { forwardModeOn } = useContext(AppContext);
   const [chatDetails, setChatDetails] = useState({});
   const [contactUserDetails, setContactUserDetails] = useState({});
   const messageUpdateReason = useRef("initial");
@@ -188,11 +190,11 @@ export default function ChatsWindow() {
             messageUpdateReason={messageUpdateReason}
             contactUserDetails={contactUserDetails}
           />
-          {
+          {forwardModeOn && (
             <div className="absolute top-0 left-0 h-full w-full">
               <ForwardMessageUserList />
             </div>
-          }
+          )}
         </div>
 
         <div className="relative">

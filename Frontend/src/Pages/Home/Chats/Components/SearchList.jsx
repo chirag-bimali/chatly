@@ -15,7 +15,8 @@ import User from "./User";
 
 export default function SearchList({ search }) {
   const { searchUsers } = useContext(APIContext);
-  const { getToken } = useContext(AuthContext);
+  const { getToken, getUser } = useContext(AuthContext);
+  const currUser = getUser();
   const [users, setUsers] = useState([]);
   useEffect(() => {
     (async function () {
@@ -23,7 +24,12 @@ export default function SearchList({ search }) {
         if (!search) {
           return;
         }
-        var response = await searchUsers(search, 1, 10, getToken());
+        var response = await searchUsers({
+          query: search,
+          page: 1,
+          pageSize: 10,
+          token: getToken(),
+        });
 
         setUsers(response.data);
       } catch (e) {
@@ -36,11 +42,13 @@ export default function SearchList({ search }) {
   return (
     <div>
       {users.length !== 0 &&
-        users.map((data) => {
-          return (
-            <User userName={data.userName} key={data.id} userId={data.id} />
-          );
-        })}
+        users
+          ?.filter((data) => currUser.id !== data.id)
+          ?.map((data) => {
+            return (
+              <User userName={data.userName} key={data.id} userId={data.id} />
+            );
+          })}
     </div>
   );
 }

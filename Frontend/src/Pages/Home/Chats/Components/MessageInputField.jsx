@@ -22,6 +22,7 @@ export default function MessageInputField({
   const disable =
     draftMode ||
     chatDetails?.status === "Blocked" ||
+    chatDetails?.status === "None" ||
     (chatDetails?.status === "Pending" &&
       contactUserDetails.id === chatDetails.actorId);
 

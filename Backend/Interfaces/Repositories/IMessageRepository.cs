@@ -11,6 +11,14 @@ public interface IMessageRepository
         string? replyMessageId = null,
         string? forwardMessageId = null
     );
+    
+    public Task<Message> CreateManyAsync(
+        List<string?> contactIds,
+        string? senderId,
+        string? content,
+        string? replyMessageId = null,
+        string? forwardMessageId = null
+    );
 
     public Task<(List<Message>, int)> GetAllAsync(
         string? contactId,

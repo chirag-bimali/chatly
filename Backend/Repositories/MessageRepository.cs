@@ -129,6 +129,44 @@ public class MessageRepository : IMessageRepository
         return newMessage;
     }
 
+    public async Task<Message> CreateManyAsync(List<string?> contactIds, string? senderId, string? content,
+        string? replyMessageId = null,
+        string? forwardMessageId = null)
+    {
+        if (contactIds.Count == 0)
+        {
+            throw new ApplicationArgumentException("The contacts cannot be empty", nameof(contactIds));
+        }
+
+        var contacts = await _dbContext.Contacts
+            .Include(c => c.User)
+            .Include(c => c.ContactUser)
+            .Where(c => contactIds.Contains(c.Id))
+            .Where(c => c.UserId == senderId || c.ContactId == senderId).ToListAsync();
+
+        //  let user know if user is trying to access other contacts and
+        // block sending a message completely
+
+        // var forwardMessage = await _dbContext.ForwardMessages.
+
+        var messages = contacts.Select<Contact, Message>(c =>
+        {
+            var messageId = Guid.NewGuid().ToString();
+            return new Message
+            {
+                Id = messageId,
+                ContactId = c.Id,
+                // Content = forwardMessageId != null ? content : ,
+                ForwardMessage = new ForwardMessage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    MessageId = messageId,
+                }
+            };
+        });
+        return new Message();
+    }
+
     public async Task<(List<Message>, int)> GetAllAsync(
         string? contactId,
         string? userId,

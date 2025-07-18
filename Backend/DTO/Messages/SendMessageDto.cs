@@ -10,6 +10,14 @@ public class SendMessageDto
     public string? ForwardMessageId { get; set; }
 }
 
+public class SendMessageToManyDto
+{
+    public List<string?>? ContactIds { get; set; } = [];
+    public string? Content { get; set; }
+    public string? ReplyMessageId { get; set; }
+    public string? ForwardMessageId { get; set; }
+}
+
 public class MessageResponseDto
 {
     public string? Id { get; set; }

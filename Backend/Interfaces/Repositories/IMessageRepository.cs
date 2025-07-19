@@ -12,8 +12,8 @@ public interface IMessageRepository
         string? forwardMessageId = null
     );
     
-    public Task<Message> CreateManyAsync(
-        List<string?> contactIds,
+    public Task<List<Message>> CreateManyAsync(
+        List<string?>? contactIds,
         string? senderId,
         string? content,
         string? replyMessageId = null,

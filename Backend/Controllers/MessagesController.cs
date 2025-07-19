@@ -78,6 +78,8 @@ public class MessagesController : ControllerBase
         }
     }
 
+    [HttpPost("SendToManyMessage")]
+    [Authorize]
     public async Task<IActionResult> SendMessageToMany([FromBody] SendMessageToManyDto request)
     {
         try
@@ -86,7 +88,7 @@ public class MessagesController : ControllerBase
             if (currUser == null) throw new ApplicationUnauthorizedAccessException("You are not logged in");
             var messages = await _repository.CreateManyAsync(contactIds: request.ContactIds, currUser, request.Content,
                 replyMessageId: request.ReplyMessageId, request.ForwardMessageId);
-            return Ok(messages);
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Sent successfully", messages.Count, 200));
         }
         catch (ApplicationException ex)
         {

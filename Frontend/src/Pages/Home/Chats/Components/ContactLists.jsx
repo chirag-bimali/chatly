@@ -18,6 +18,7 @@ import AppContext from "../../../../Context/AppContext";
 export default function ContactLists() {
   const { getContacts } = useContext(APIContext);
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
+  const [loading, setLoading] = useState(true);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -41,52 +42,67 @@ export default function ContactLists() {
   useEffect(() => {
     (async function () {
       try {
-        let response = await getContacts({ page: 1, pageSize: 10000, token: getToken() });
+        let response = await getContacts({
+          page: 1,
+          pageSize: 10000,
+          token: getToken(),
+        });
         setContacts(response.data);
+        setLoading(false);
       } catch (e) {
         if (e instanceof AuthenticationError) {
           navigate("/login");
         }
+        setLoading(false);
       }
     })();
   }, [getContacts, getToken, navigate]);
 
   const containerRef = useRef(null);
-  if (contacts?.length === 0) return <NoContactDisplay />;
+  if (contacts?.length === 0 && !loading) return <NoContactDisplay />;
+  if (loading)
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <span className="loading loading-bars loading-xl"></span>
+      </div>
+    );
+
   return (
-    <div
-      className="overflow-y-auto flex-1"
-      ref={containerRef}
-      onContextMenu={(e) => {
-        if (globalContextMenu) {
-          setGlobalContextMenu(false);
-          return;
-        }
-        e.preventDefault();
-        if (e.target.closest(".contact") !== null) {
-          setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
-          setGlobalContextMenu(true);
-          e.stopPropagation();
-        }
-      }}
-    >
-      {contacts.map((data) => {
-        let contactUser;
-        if (data.contactId == user.id) {
-          contactUser = data.user;
-        } else contactUser = data.contactUser;
+    !loading && (
+      <div
+        className="overflow-y-auto flex-1"
+        ref={containerRef}
+        onContextMenu={(e) => {
+          if (globalContextMenu) {
+            setGlobalContextMenu(false);
+            return;
+          }
+          e.preventDefault();
+          if (e.target.closest(".contact") !== null) {
+            setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+            setGlobalContextMenu(true);
+            e.stopPropagation();
+          }
+        }}
+      >
+        {contacts.map((data) => {
+          let contactUser;
+          if (data.contactId == user.id) {
+            contactUser = data.user;
+          } else contactUser = data.contactUser;
 
-        return (
-          <Contact
-            isActive={true}
-            key={data.id}
-            contactId={data.id}
-            contactName={contactUser.displayName}
-          />
-        );
-      })}
+          return (
+            <Contact
+              isActive={true}
+              key={data.id}
+              contactId={data.id}
+              contactName={contactUser.displayName}
+            />
+          );
+        })}
 
-      <ContactContextMenu contextMenu={contextMenu} />
-    </div>
+        <ContactContextMenu contextMenu={contextMenu} />
+      </div>
+    )
   );
 }

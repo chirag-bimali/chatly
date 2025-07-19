@@ -11,19 +11,18 @@ export default function ChatsWindowBody({
   messages,
   setMessages,
   messageUpdateReason,
-  contactUserDetails
+  contactUserDetails,
 }) {
   const chatContainerRef = useRef(null);
 
   const { getMessages } = useContext(APIContext);
-  const { getToken  } = useContext(AuthContext);
+  const { getToken } = useContext(AuthContext);
   const [skip, setSkip] = useState(0);
   const [pageSize, _] = useState(10);
   const [totalMessages, setTotalMessages] = useState(0);
   const [loading, setLoading] = useState(true);
   const prevScrollTopRef = useRef(0);
   const prevScrollHeightRef = useRef(0);
-
 
   useEffect(() => {
     if (contactDetails) {
@@ -46,14 +45,15 @@ export default function ChatsWindowBody({
         });
         setTotalMessages(response.totalCount);
         if (skip < pageSize) {
-          setMessages(response.data);
+          setMessages(response.data?.reverse());
           messageUpdateReason.current = "initial";
         } else {
           setTimeout(() => {
             setMessages((prev) => {
-              return [...response.data, ...prev];
+              const data = response.data.reverse();
+              return [...data, ...prev];
             });
-          }, 0);
+          }, 100);
         }
         setLoading(false);
       } catch (e) {

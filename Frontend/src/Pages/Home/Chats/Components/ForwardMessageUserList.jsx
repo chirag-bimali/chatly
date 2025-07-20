@@ -11,21 +11,22 @@ export default function ForwardMessageUserList() {
   const { getContacts } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const [contacts, setContacts] = useState([]);
+  const [query, setQuery] = useState([]);
 
-  const handleChange = async function (e) {
-    try {
-      const query = e.target.value;
-      const response = await getContacts({
-        query: query,
-        pageSize: 100000,
-        token: getToken(),
-      });
-      console.log(response.data);
-      setContacts(response.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  useEffect(() => {
+    (async function () {
+      try {
+        const response = await getContacts({
+          query: query,
+          pageSize: 100000,
+          token: getToken(),
+        });
+        setContacts(response.data);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [query, getContacts, getToken]);
 
   return (
     <div className="flex items-start justify-between gap-3.5 flex-col w-8/12 h-fit py-6 mx-auto bg-neutral-50 px-12 relative">
@@ -38,7 +39,7 @@ export default function ForwardMessageUserList() {
             placeholder="Search users..."
             className="bg-transparent  text-base placeholder-base-content"
             onChange={(e) => {
-              handleChange(e);
+              if (e.target.value) setQuery(e.target.value);
             }}
           />
         </label>

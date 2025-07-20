@@ -12,9 +12,20 @@ export default function MessageInputField({
   messageUpdateReason,
   draftMode,
 }) {
-  const { replyModeOn, setReplyModeOn, replyIdRef } = useContext(AppContext);
-  const { sendMessage } = useContext(APIContext);
+  const {
+    replyModeOn,
+    setReplyModeOn,
+    replyIdRef,
+    forwardIdRef,
+    forwardModeOn,
+    setForwardModeOn,
+    forwardContacts,
+    setForwardContacts,
+  } = useContext(AppContext);
+
+  const { sendMessage, sendMessageToMany } = useContext(APIContext);
   const { getToken, getUser } = useContext(AuthContext);
+
   const [chatContent, setChatContent] = useState("");
   const contactId = chatDetails.id;
   const currUser = getUser();
@@ -30,13 +41,44 @@ export default function MessageInputField({
     if (disable) return;
     e.preventDefault();
     try {
+      if (forwardModeOn && forwardContacts.length === 0) {
+        alert("Please select at least one contact to forward the message.");
+        return;
+      }
+      if (replyModeOn && !replyIdRef.current) {
+        alert("Please select a message to reply to.");
+        return;
+      }
+      if (forwardModeOn) {
+        // Send Forward message
+        const response = await sendMessageToMany({
+          contactIds: forwardContacts,
+          forwardMessageId: forwardIdRef.current,
+          content: chatContent,
+          token: getToken(),
+        });
+        console.log("Messages sent successfully:", response?.data);
+
+        // Clear Input Field
+        setChatContent("");
+
+        // Close Forwarding screen
+        setForwardModeOn(false);
+
+        // Reset Forward Contacts
+        setForwardContacts([]);
+
+        return;
+      }
+
+      if (!chatContent) return;
+      // In case of reply and normal message send
       const response = await sendMessage({
-        contactId,
+        contactId: contactId,
         replyMessageId: replyModeOn ? replyIdRef.current : null,
         content: chatContent,
         token: getToken(),
       });
-      console.log(response);
       setMessages((prev) => [...prev, response.data]);
       setChatContent("");
       if (replyModeOn) setReplyModeOn(false);
@@ -51,7 +93,8 @@ export default function MessageInputField({
     replyMessage?.senderId === currUser.id ? currUser : contactUserDetails;
 
   return (
-    <form onSubmit={(e) => handleSubmit(e)}>
+    // On click also because when forwarding the content my by empty and it empty form cannot be submitted
+    <form onSubmit={(e) => handleSubmit(e)} onClick={(e) => handleSubmit(e)}>
       <div className="px-24 h-fit">
         <div className="w-full  bg-neutral-100 rounded-xl items-center px-2 py-1 relative">
           {/* Reply Message Area */}

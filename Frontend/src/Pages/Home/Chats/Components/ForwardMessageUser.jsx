@@ -1,14 +1,28 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import DefaultUserProfile from "../../../../assets/default-user-profile.svg";
 import AuthContext from "../../../../Context/AuthContext";
+import AppContext from "../../../../Context/AppContext";
 export default function ForwardMessageUser({ contact }) {
   const { getUser } = useContext(AuthContext);
+  const { setForwardContacts } = useContext(AppContext);
   const currUser = getUser();
+  const [isChecked, setIsChecked] = useState(false);
 
   const contactUserDetails =
     contact?.userId === currUser.id ? contact?.contactUser : contact?.user;
 
-  console.log(contactUserDetails.displayName);
+  async function handleSelect() {
+    if (isChecked) {
+      setForwardContacts((prev) => prev.filter((id) => id !== contact.id));
+      setIsChecked(false);
+    } else {
+      setForwardContacts((prev) => {
+        return [...prev, contact.id];
+      });
+      setIsChecked(true);
+    }
+  }
+
   return (
     <label className="label flex justify-between items-start">
       <div className="flex gap-4">
@@ -23,7 +37,13 @@ export default function ForwardMessageUser({ contact }) {
           </div>
         </div>
       </div>
-      <input type="checkbox" defaultChecked className="checkbox" />
+      <input
+        type="checkbox"
+        className="checkbox"
+        checked={isChecked}
+        onChange={() => handleSelect()}
+        value={contact?.id}
+      />
     </label>
   );
 }

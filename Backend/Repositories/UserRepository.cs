@@ -23,6 +23,14 @@ public class UserRepository : IUserRepository
         _configuration = configuration;
     }
 
+    public async Task<User> GetUserAsync(string? userId = null, string? username = null)
+    {
+        if (userId == null && username == null)
+            throw new ApplicationArgumentException("User id or username cannot be null", nameof(userId));
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId || u.UserName == username);
+        return user ?? throw new NotFoundException("User not found");
+    }
+
     public async Task<(Stream, string)> GetProfilePictureAsync(string? userId)
     {
         if (userId == null)

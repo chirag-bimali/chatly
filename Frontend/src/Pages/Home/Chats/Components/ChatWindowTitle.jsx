@@ -1,14 +1,24 @@
+import { useContext, useEffect, useState } from "react";
 import Search from "../../../../assets/search.svg?react";
 import TrippleDots from "../../../../assets/tripple-dots.svg?react";
-export default function ChatWindowTitle({ name, lastSeen }) {
+import { formatDistanceToNow, parseISO } from "date-fns";
+import AuthContext from "../../../../Context/AuthContext";
+
+export default function ChatWindowTitle({
+  contactUserDetails,
+}) {
   return (
     <div className="flex items-center justify-between">
       <div>
         <div className="prose prose-p:text-4xl prose-p:mb-3 prose-p:font-semibold">
-          <p>{name ? name : "Ethan Carter"}</p>
+          <p>{contactUserDetails?.displayName}</p>
         </div>
         <div className="prose prose-p:text-sm prose-p:text-neutral-400">
-          <p>{lastSeen ? lastSeen : "last seen 23 min ago"}</p>
+          <p>
+            {formatDistanceToNow(parseISO(contactUserDetails.lastSeen), {
+              addSuffix: true,
+            })}
+          </p>
         </div>
       </div>
       <div className="flex gap-4 self-start">

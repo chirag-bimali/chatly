@@ -90,9 +90,12 @@ public class ContactRepository : IContactRepository
             {
                 Id = Guid.NewGuid().ToString(),
                 ContactId = contactUser.Id,
+                ContactUser = contactUser,
                 UserId = currUser.Id,
-                Status = ContactStatus.Pending,
+                User = currUser,
+                Status = ContactStatus.None,
                 CreatedAt = DateTime.Now,
+                ActorId = null,
                 ChatDeleted = false,
                 Mutated = false,
                 Archived = false,
@@ -163,7 +166,60 @@ public class ContactRepository : IContactRepository
         return contact;
     }
 
-    public async Task<Contact?> GetAsync(
+    public async Task<Contact> UpdateContactStatus(string? contactId = null, string? userId = null,
+        string? contactStatus = null)
+    {
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(c =>
+            (c.Id == contactId) && (c.UserId == userId || c.ContactId == userId));
+        if (contact == null)
+            throw new NotFoundException("Contact not found");
+
+        if (!Enum.TryParse<ContactStatus>(contactStatus, ignoreCase: true, out var status))
+            throw new ApplicationArgumentException("Invalid contact status to update", nameof(contactStatus));
+
+
+        //  Send Request
+        if (contact.Status == ContactStatus.None && !(status == ContactStatus.Accepted || status == ContactStatus.None))
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+
+        if (contact.Status == ContactStatus.Pending && status == ContactStatus.Accepted && contact.ActorId != userId)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Pending && status == ContactStatus.Blocked)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Accepted &&
+            !(status == ContactStatus.Accepted || status == ContactStatus.Pending))
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        if (contact.Status == ContactStatus.Blocked && status == ContactStatus.None && contact.ActorId == userId)
+        {
+            contact.Status = status;
+            contact.ActorId = userId;
+        }
+
+        var actor = await _dbContext.Users.FirstOrDefaultAsync(c => c.Id == contact.ActorId);
+        contact.Actor = actor;
+
+        _dbContext.Update(contact);
+        await _dbContext.SaveChangesAsync();
+        return contact;
+    }
+
+    public async Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,
         string? contactUserName = null,
@@ -177,15 +233,20 @@ public class ContactRepository : IContactRepository
                 .SetErrorDetails("Could not find contact when both contact id and userid are null");
         }
 
+        var queryable = _dbContext.Contacts.Include(c => c.User).Include(c => c.ContactUser);
+
+
         Contact? contact = null;
-        contact = await _dbContext.Contacts.FirstOrDefaultAsync(c => c.Id == contactId);
+        contact = await queryable
+            .Include(c => c.Actor)
+            .FirstOrDefaultAsync(c => c.Id == contactId);
 
 
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserId))
         {
-            contact = await _dbContext.Contacts.FirstOrDefaultAsync(c =>
-                (c.UserId == userId && c.ContactId == contactId) ||
-                (c.ContactId == userId && c.UserId == contactId)
+            contact = await queryable.FirstOrDefaultAsync(c =>
+                (c.UserId == userId && c.ContactId == contactUserId) ||
+                (c.ContactId == userId && c.UserId == contactUserId)
             );
         }
 
@@ -194,6 +255,7 @@ public class ContactRepository : IContactRepository
             error.AddError("ContactUserId", "Contact user id field is null but not required")
                 .AddParam(nameof(contactUserId));
         }
+
 
         if (contact == null && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(contactUserName))
         {
@@ -211,13 +273,15 @@ public class ContactRepository : IContactRepository
             );
         }
 
-        return contact;
+
+        return contact ?? throw error;
     }
 
     public async Task<(List<Contact>, int)> GetAllAsync(
         string? userId = null,
         int page = 1,
         int pageSize = 10,
+        string? query = null,
         bool excludeBlocked = true,
         bool excludeNone = true,
         bool onlyBlocked = false,
@@ -227,10 +291,33 @@ public class ContactRepository : IContactRepository
     {
         try
         {
-            var queryable = _dbContext.Contacts.Where(x =>
-                (x.UserId == userId || x.ContactId == userId)
-            );
-            // return (queryable.ToList(), 3);
+            var queryable = _dbContext.Contacts
+                .Include(c => c.User)
+                .Include(c => c.ContactUser)
+                .Where(x =>
+                    (x.UserId == userId || x.ContactId == userId)
+                );
+            
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine(query);
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            Console.WriteLine("------------------------");
+            if (!string.IsNullOrEmpty(query))
+            {
+                queryable = queryable.Where(c =>
+                    (c.User != null && c.ContactUser != null) &&
+                    (
+                        (c.UserId == userId && EF.Functions.Like(c.ContactUser.NormalizedUserName, $"%{query}%")) ||
+                        (c.ContactId == userId && EF.Functions.Like(c.User.NormalizedUserName, $"%{query}%"))
+                    )
+                );
+            }
+
             if (onlyBlocked)
             {
                 queryable = queryable.Where(x => x.Status == ContactStatus.Blocked);
@@ -252,7 +339,8 @@ public class ContactRepository : IContactRepository
             }
 
             var contactsCounts = await queryable.CountAsync();
-            queryable = queryable.Skip((page - 1) * pageSize).Take(pageSize);
+            queryable = queryable.Skip((page - 1) * pageSize)
+                .Take(pageSize);
             var contacts = await queryable.ToListAsync();
 
 

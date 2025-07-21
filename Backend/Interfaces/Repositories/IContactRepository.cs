@@ -20,7 +20,10 @@ public interface IContactRepository
         int? unreadCount = null
     );
 
-    public Task<Contact?> GetAsync(
+    public Task<Contact> UpdateContactStatus(string? contactId = null, string? userId = null,
+        string? contactStatus = null);
+
+    public Task<Contact> GetAsync(
         string? contactId = null,
         string? contactUserId = null,
         string? contactUserName = null,
@@ -32,6 +35,7 @@ public interface IContactRepository
         string? userId = null,
         int page = 1,
         int pageSize = 10,
+        string? query = null,
         bool excludeBlocked = true,
         bool excludeNone = true,
         bool onlyBlocked = true,

@@ -11,6 +11,7 @@ using ApplicationException = Chatly.Exceptions.ApplicationException;
 using Chatly.DTO.Messages;
 using Chatly.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Identity.Client;
 
 namespace Chatly.Controllers;
 
@@ -33,7 +34,6 @@ public class MessagesController : ControllerBase
         try
         {
             var currUser = User.GetUserId();
-            Console.WriteLine(User.GetUserName());
             if (currUser == null) throw new ApplicationUnauthorizedAccessException("You are not logged in");
             var newMessage = await _repository.CreateAsync(
                 contactId: request.ContactId,
@@ -78,6 +78,25 @@ public class MessagesController : ControllerBase
         }
     }
 
+    [HttpPost("SendToManyMessage")]
+    [Authorize]
+    public async Task<IActionResult> SendMessageToMany([FromBody] SendMessageToManyDto request)
+    {
+        try
+        {
+            var currUser = User.GetUserId();
+            if (currUser == null) throw new ApplicationUnauthorizedAccessException("You are not logged in");
+            var messages = await _repository.CreateManyAsync(contactIds: request.ContactIds, currUser, request.Content,
+                replyMessageId: request.ReplyMessageId, request.ForwardMessageId);
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Sent successfully", messages.Count, 200));
+        }
+        catch (ApplicationException ex)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message, ex.StatusCode, ex.ErrorCode, ex.Details,
+                ex.Errors));
+        }
+    }
+
     [HttpGet("[action]")]
     [Authorize]
     public async Task<IActionResult> ReadMessages([FromQuery] ReadMessageDto request)
@@ -89,7 +108,7 @@ public class MessagesController : ControllerBase
 
 
             var (messages, count) =
-                await _repository.GetAllAsync(request.ContactId, userId, request.Page ?? 1, request.PageSize ?? 10);
+                await _repository.GetAllAsync(request.ContactId, userId, request.Skip, request.Take);
 
 
             return Ok(ApiResponse<List<MessageResponseDto>>.SuccessResponse(messages.ToListMessageResponseDto(),

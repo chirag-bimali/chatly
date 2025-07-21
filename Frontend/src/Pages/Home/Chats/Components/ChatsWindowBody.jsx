@@ -1,96 +1,140 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Chat from "./Chat";
 
-import CopyIcon from "../../../../assets/copy-icon.svg?react";
-import DeleteIcon from "../../../../assets/delete-icon.svg?react";
-import ForwardIcon from "../../../../assets/forward-icon.svg?react";
-import ReplyIcon from "../../../../assets/reply-icon.svg?react";
+import MessageContextMenu from "./MessageContextMenu";
+import AppContext from "../../../../Context/AppContext";
+import APIContext from "../../../../Context/APIContext";
+import AuthContext from "../../../../Context/AuthContext";
 
-export default function ChatsWindowBody() {
-  const containerRef = useRef(null);
+export default function ChatsWindowBody({
+  contactDetails,
+  messages,
+  setMessages,
+  messageUpdateReason,
+  contactUserDetails,
+}) {
+  const chatContainerRef = useRef(null);
+
+  const { getMessages } = useContext(APIContext);
+  const { getToken } = useContext(AuthContext);
+  const [skip, setSkip] = useState(0);
+  const [pageSize, _] = useState(10);
+  const [totalMessages, setTotalMessages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const prevScrollTopRef = useRef(0);
+  const prevScrollHeightRef = useRef(0);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
+    if (contactDetails) {
+      setMessages([]);
+      setSkip(0);
+      setLoading(true);
     }
-  }, []);
+  }, [contactDetails, setMessages]);
 
-  const [contextMenu, setContextMenu] = useState({
-    visible: false, // Should the menu be shown?
-    x: 0, // X position on screen
-    y: 0, // Y position on screen
-    messageId: null, // Which message was clicked?
-  });
-  return (
-    <div
-      className="h-[460px] overflow-y-scroll"
-      ref={containerRef}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        if (e.target.closest(".chat-bubble") !== null)
-          setContextMenu({
-            visible: true,
-            x: e.pageX,
-            y: e.pageY,
+  useEffect(() => {
+    if (!contactDetails.id) return;
+    (async function () {
+      try {
+        const contactId = contactDetails?.id;
+        const response = await getMessages({
+          contactId,
+          token: getToken(),
+          skip: skip,
+          take: pageSize,
+        });
+        setTotalMessages(response.totalCount);
+        if (skip < pageSize) {
+          setMessages(response.data?.reverse());
+          messageUpdateReason.current = "initial";
+        } else {
+          setTimeout(() => {
+            setMessages((prev) => {
+              const data = response.data.reverse();
+              return [...data, ...prev];
+            });
+          }, 100);
+        }
+        setLoading(false);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+  }, [
+    contactDetails,
+    getMessages,
+    getToken,
+    pageSize,
+    setMessages,
+    skip,
+    messageUpdateReason,
+  ]);
+
+  useEffect(() => {
+    const el = chatContainerRef.current;
+
+    if (el && !loading) {
+      if (messageUpdateReason.current === "initial") {
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            el.scrollTop = el.scrollHeight;
           });
-      }}
-      onClick={() => setContextMenu({ ...contextMenu, visible: false })}
-    >
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
-      <Chat isLeft={true} message={"Hello man!😒"} />
-      <Chat isLeft={false} message={"Yes man!😒"} />
+        }, 100);
+      } else if (messageUpdateReason.current === "pagination") {
+        requestAnimationFrame(() => {
+          const newScrollHeight = el.scrollHeight;
+          el.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+        });
+      } else if (messageUpdateReason.current === "new") {
+        setTimeout(() => {
+          const newScrollHeight = el.scrollHeight;
+          requestAnimationFrame(() => {
+            el.scrollTop = newScrollHeight;
+          });
+        }, 0);
+      }
+    }
+  }, [messageUpdateReason, messages, loading]);
 
-      {contextMenu.visible && (
-        <div
-          className="absolute bg-neutral-200 rounded shadow-md z-50"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <ul className="text-sm">
-            <li className="hover:bg-gray-100 cursor-pointer flex items-center">
-              <span className="px-4 py-3 flex items-center justify-center">
-                <ReplyIcon className="h-4 w-4" />
-              </span>
-              <p>Reply</p>
-            </li>
-            <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-              <span className="px-4 py-3 flex items-center justify-center">
-                <CopyIcon className="h-4 w-4" />
-              </span>
-              <p>Edit</p>
-            </li>
-            <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-              <span className="px-4 py-3 flex items-center justify-center">
-                <CopyIcon className="h-4 w-4" />
-              </span>
-              <p>Copy text</p>
-            </li>
-            <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-              <span className="px-4 py-3 flex items-center justify-center">
-                <ForwardIcon className="h-4 w-4" />
-              </span>
-              <p>Forward</p>
-            </li>
-            <li className="hover:bg-gray-100 cursor-pointer flex items-center pr-6">
-              <span className="px-4 py-3 flex items-center justify-center">
-                <DeleteIcon className="h-4 w-4" />
-              </span>
-              <p>Delete</p>
-            </li>
-          </ul>
-        </div>
-      )}
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    const handleScroll = async () => {
+      if (
+        chatContainer.scrollTop === 0 &&
+        !loading &&
+        messages.length < totalMessages
+      ) {
+        setLoading(true);
+        setSkip((prev) => prev + pageSize);
+        prevScrollTopRef.current = chatContainer.scrollTop;
+        prevScrollHeightRef.current = chatContainer.scrollHeight;
+        messageUpdateReason.current = "pagination";
+      }
+    };
+    if (chatContainer) {
+      chatContainer.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (chatContainer) {
+        chatContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [loading, messages, totalMessages, pageSize, messageUpdateReason]);
+
+  return (
+    <div className="flex-1 overflow-y-auto" ref={chatContainerRef}>
+      {!loading &&
+        messages.map((e) => {
+          return (
+            <Chat
+              key={e.id}
+              contactDetails={contactDetails}
+              message={e}
+              contactUserDetails={contactUserDetails}
+            />
+          );
+        })}
     </div>
   );
 }

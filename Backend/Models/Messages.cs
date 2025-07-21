@@ -8,6 +8,7 @@ public class Message
     public string? SenderId { get; set; }
 
     public string? Content { get; set; }
+    public DateTime CreatedAt { get; set; }
     public string? SeenAt { get; set; }
     public bool Read { get; set; }
     public bool IsForwarded { get; set; }

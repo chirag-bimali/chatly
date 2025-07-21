@@ -4,12 +4,7 @@ import MessageContextMenu from "./MessageContextMenu";
 import AuthContext from "../../../../Context/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 
-export default function Chat({
-  imgSrc,
-  message,
-  contactDetails,
-  contactUserDetails,
-}) {
+export default function Chat({ imgSrc, message }) {
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -76,19 +71,37 @@ export default function Chat({
               }`}
             >
               <p className="text-xs text-slate-300 font-medium">
-                {console.log(message)}
                 {message?.replyMessage?.previousSender?.displayName}
               </p>
               <p className="text-xs text-slate-800">
-                {
-                  message?.replyMessage?.previousContent
-                }
+                {message?.replyMessage?.previousContent}
               </p>
             </div>
           )}
-          <p className="text-sm text-slate-600 mb-2">
-            {message?.content ? message?.content : "Sent you a message"}
-          </p>
+          
+          {/* If message is forwarded */}
+          {message?.forwardMessage?.id && (
+            <p className="text-xs text-slate-500 font-medium mb-1">
+              ⏩ Forwarded
+            </p>
+          )}
+
+          {/* message content */}
+          <p className="text-sm text-slate-600 mb-2">{message?.content}</p>
+
+          {/* forward sub content */}
+          {message?.forwardMessage?.id &&
+            message?.forwardMessage?.subContent && (
+              <div
+                className={`px-2 py-2 bg-slate-400 flex flex-col mb-1 ${
+                  message.senderId === currUser.id
+                    ? "rounded-r-sm border-l-4"
+                    : " rounded-l-sm border-r-4"
+                }`}
+              >
+                <p className="text-sm">{message?.forwardMessage?.subContent}</p>
+              </div>
+            )}
           <div>
             <p
               className={`text-xs opacity-40 ${

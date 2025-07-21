@@ -5,6 +5,7 @@ export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
   const [replyModeOn, setReplyModeOn] = useState(false);
   const [forwardModeOn, setForwardModeOn] = useState(false);
+  const [forwardContacts, setForwardContacts] = useState([]);
   const replyIdRef = useRef(null);
   const forwardIdRef = useRef(null);
 
@@ -41,6 +42,8 @@ export default function AppProvider({ children }) {
         forwardModeOn,
         setForwardModeOn,
         forwardIdRef,
+        forwardContacts,
+        setForwardContacts,
       }}
     >
       {children}

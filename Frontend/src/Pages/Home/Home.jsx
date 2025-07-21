@@ -18,6 +18,7 @@ export default function Home() {
             <Route path="/chat/:chatId" element={<ChatEnvironment />} />
             <Route path="/chat/draft/:userId" element={<ChatEnvironment />} />
             <Route path="/chat/" element={<ChatEnvironment />} />
+            <Route path="/" element={<ChatEnvironment />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

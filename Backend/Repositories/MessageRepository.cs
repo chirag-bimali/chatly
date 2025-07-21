@@ -129,6 +129,127 @@ public class MessageRepository : IMessageRepository
         return newMessage;
     }
 
+    public async Task<List<Message>> CreateManyAsync(List<string?>? contactIds, string? senderId, string? content,
+        string? replyMessageId = null,
+        string? forwardMessageId = null)
+    {
+        if (contactIds == null)
+            throw new ApplicationArgumentException("The contact list cannot be null", nameof(contactIds));
+
+        if (contactIds.Count == 0)
+        {
+            throw new ApplicationArgumentException("The contacts cannot be empty", nameof(contactIds));
+        }
+
+        if (replyMessageId != null && forwardMessageId != null)
+            throw new ApplicationArgumentException("One of the field must be null", nameof(replyMessageId)).AddParam(
+                nameof(forwardMessageId));
+
+        var forwardMessage = forwardMessageId != null
+            ? await _dbContext.Messages
+                .Include(m => m.Contact)
+                .Include(m => m.Sender)
+                .Where(m => m.Contact != null && (m.Contact.UserId == senderId || m.Contact.ContactId == senderId))
+                .FirstOrDefaultAsync(m => m.Id == forwardMessageId)
+            : null;
+        if (!string.IsNullOrEmpty(forwardMessageId) && forwardMessage == null)
+        {
+            throw new NotFoundException("Message to be forwarded not found");
+        }
+
+        var replyMessage = replyMessageId != null
+            ? await _dbContext.Messages
+                .Include(m => m.Contact)
+                .Include(m => m.Sender)
+                .Where(m => m.Contact != null && (m.Contact.UserId == senderId || m.Contact.ContactId == senderId))
+                .FirstOrDefaultAsync(m => m.Id == replyMessageId)
+            : null;
+
+        if ((!string.IsNullOrEmpty(replyMessageId)) && replyMessage == null)
+        {
+            throw new NotFoundException("Message to be forwarded not found");
+        }
+
+
+        var contacts = await _dbContext.Contacts
+            .Include(c => c.User)
+            .Include(c => c.ContactUser)
+            .Where(c => forwardMessage == null || forwardMessage.ContactId != c.Id)
+            .Where(c => replyMessage == null || replyMessage.ContactId == c.Id)
+            .Where(c => contactIds.Contains(c.Id))
+            .Where(c => c.UserId == senderId || c.ContactId == senderId).ToListAsync();
+
+        //  let user know if user is trying to access other contacts and
+        // block sending a message completely
+        if (contacts.Count == 0) throw new NotFoundException("Contacts not found from given set");
+
+
+        var messages = contacts.Select<Contact, Message>(c =>
+        {
+            var messageId = Guid.NewGuid().ToString();
+            return new Message
+            {
+                Id = messageId,
+                ContactId = c.Id,
+                Content = forwardMessage == null ? content : forwardMessage.Content,
+                CreatedAt = DateTime.Now,
+                SenderId = senderId,
+                IsForwarded = forwardMessage != null,
+                IsReply = replyMessage != null,
+                Read = false,
+                ForwardMessage = forwardMessage == null
+                    ? null
+                    : new ForwardMessage
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        MessageId = messageId,
+                        SubContent = content,
+                        PreviousContact = forwardMessage?.Contact,
+                        PreviousContactId = forwardMessage?.ContactId,
+                        PreviousSender = forwardMessage?.Sender,
+                        PreviousSenderId = forwardMessage?.SenderId,
+                    },
+                ReplyMessage = replyMessage == null
+                    ? null
+                    : new ReplyMessage
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        MessageId = messageId,
+                        PreviousContent = replyMessage.Content,
+                        PreviousSenderId = replyMessage.SenderId,
+                        PreviousSender = replyMessage?.Sender
+                    }
+            };
+        }).ToList();
+
+        var addMessages = _dbContext.Messages.AddRangeAsync(messages);
+        Task? addForwardMessages = null;
+        if (forwardMessage != null)
+        {
+            var forwarding = messages.Select(m => m.ForwardMessage ?? new ForwardMessage()
+                )
+                .ToList();
+            addForwardMessages = _dbContext.ForwardMessages.AddRangeAsync(forwarding);
+        }
+
+        Task? addReplyMessages = null;
+        if (replyMessage != null)
+        {
+            var replying = messages.Select(m => m.ReplyMessage ?? new ReplyMessage()
+                )
+                .ToList();
+            addReplyMessages = _dbContext.ReplyMessages.AddRangeAsync(replying);
+        }
+
+        if (addForwardMessages != null) await addForwardMessages;
+        if (addReplyMessages != null) await addReplyMessages;
+
+        var saved = await _dbContext.SaveChangesAsync();
+
+
+        return messages;
+    }
+
     public async Task<(List<Message>, int)> GetAllAsync(
         string? contactId,
         string? userId,
@@ -157,9 +278,8 @@ public class MessageRepository : IMessageRepository
             .Include(x => x.ReplyMessage)
             .ThenInclude(r => r != null ? r.PreviousSender : null)
             .OrderByDescending(c => c.CreatedAt)
-            .Where(c => c.ContactId == contactId).Skip(skip).Take(take)
-            .OrderBy(c => c.CreatedAt);
-        Console.WriteLine(await queryable.CountAsync());
+            .Where(c => c.ContactId == contactId).Skip(skip).Take(take);
+        // .OrderBy(c => c.CreatedAt);
         return (await queryable.ToListAsync(), count);
     }
 

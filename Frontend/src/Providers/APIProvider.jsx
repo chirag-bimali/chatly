@@ -130,13 +130,12 @@ export default function APIProvider({ children }) {
   },
   []);
   const sendMessage = useCallback(async function ({
-    content,
     contactId,
+    content,
     replyMessageId,
     forwardMessageId,
     token,
   }) {
-    console.log(content);
     const route = `${API_ROUTE}/messages/sendMessage`;
     const response = await axios.post(
       route,
@@ -155,6 +154,33 @@ export default function APIProvider({ children }) {
     return response.data;
   },
   []);
+
+  const sendMessageToMany = useCallback(async function ({
+    contactIds,
+    content,
+    replyMessageId,
+    forwardMessageId,
+    token,
+  }) {
+    const route = `${API_ROUTE}/messages/sendtomanymessage`;
+    const response = await axios.post(
+      route,
+      {
+        ContactIds: contactIds,
+        Content: content,
+        ReplyMessageId: replyMessageId,
+        ForwardMessageId: forwardMessageId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
   const changeContactStatus = useCallback(async function ({
     contactId,
     status,
@@ -186,6 +212,7 @@ export default function APIProvider({ children }) {
         getContact,
         getMessages,
         sendMessage,
+        sendMessageToMany,
         createContact,
         changeContactStatus,
       }}

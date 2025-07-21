@@ -18,7 +18,9 @@ export default function SearchList({ search }) {
   const { getToken, getUser } = useContext(AuthContext);
   const currUser = getUser();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
+    setLoading(true);
     (async function () {
       try {
         if (!search) {
@@ -32,12 +34,22 @@ export default function SearchList({ search }) {
         });
 
         setUsers(response.data);
+        setTimeout(() => {
+          setLoading(false);
+        }, 250);
       } catch (e) {
         setUsers([]);
         console.log(e);
       }
     })();
   }, [search, searchUsers, getToken]);
+
+  if (loading)
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <span className="loading loading-bars loading-xl"></span>
+      </div>
+    );
 
   return (
     <div>

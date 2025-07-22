@@ -1,4 +1,5 @@
 using Chatly.DTO.Accounts;
+using Chatly.DTO.Contacts;
 
 namespace Chatly.DTO.Messages;
 
@@ -23,6 +24,7 @@ public class MessageResponseDto
     public string? Id { get; set; }
     public string? ContactId { get; set; }
     public string? Content { get; set; }
+    public ContactDto? Contact { get; set; }
     public string? SenderId { get; set; }
     public DateTime CreatedAt { get; set; }
     public ForwardMessageResponseDto? ForwardMessage { get; set; }

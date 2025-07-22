@@ -1,5 +1,6 @@
 using Backend.Mappers;
 using Chatly.DTO.Messages;
+using Chatly.Mappers;
 using Chatly.Models;
 
 namespace Chatly.Extensions;
@@ -23,6 +24,7 @@ public static class MessageToMessageResponseExtension
             // public ReplyMessageResponseDto? ReplyMessage { get; set; }
             Id = message.Id,
             ContactId = message.ContactId,
+            Contact = message.Contact?.ToContactsDtoFromContact(),
             Content = message.Content,
             SenderId = message.SenderId,
             CreatedAt = message.CreatedAt,

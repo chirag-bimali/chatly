@@ -130,8 +130,8 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 //  Assign Access token for the specified hub routes in jwtBearerEvents.
-app.MapHub<ContactHub>("hubs/contact");
-app.MapHub<MessageHub>("hubs/message");
+app.MapHub<ContactHub>("hubs/contacts");
+app.MapHub<MessageHub>("hubs/messages");
 
 app.MapFallback(() => Results.NotFound(ApiResponse<object>.ErrorResponse(
     "404 Not Found",

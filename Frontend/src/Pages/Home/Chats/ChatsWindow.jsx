@@ -18,8 +18,7 @@ export default function ChatsWindow() {
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState([]);
   const [draftMode, setDraftMode] = useState(true);
-
-  const currUser = getUser();
+  const [currUser, setCurrUser] = useState(null);
 
   const { getContact, getUserById, createContact, changeContactStatus } =
     useContext(APIContext);
@@ -28,6 +27,17 @@ export default function ChatsWindow() {
   const [contactUserDetails, setContactUserDetails] = useState({});
   const messageUpdateReason = useRef("initial");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    try {
+      const user = getUser();
+      setCurrUser(user);
+    } catch (error) {
+      console.error("Failed to get user:", error);
+      setCurrUser(null);
+      navigate("/login")
+    }
+  }, [getUser, navigate]);
 
   useEffect(() => {
     if (!userId) {

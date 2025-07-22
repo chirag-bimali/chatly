@@ -1,14 +1,39 @@
 import { Link, useLocation } from "react-router-dom";
 import DefaultUserProfile from "../../../../assets/default-user-profile.svg";
 import APIContext from "../../../../Context/APIContext";
+import { useContext, useEffect, useState } from "react";
+import AuthContext from "../../../../Context/AuthContext";
+import AppContext from "../../../../Context/AppContext";
 export default function Contact({
   contactName,
   contactId,
-  lastMessage,
   lastMessageTime,
   profileImageUrl,
 }) {
   let location = useLocation();
+  const { getMessages } = useContext(APIContext);
+  const { getToken } = useContext(AuthContext);
+  const { latestMessage } = useContext(AppContext);
+  const [lastMessage, setLastMessage] = useState("");
+  useState(() => {
+    (async function () {
+      const response = await getMessages({
+        contactId: contactId,
+        token: getToken(),
+        skip: 0,
+        take: 1,
+      });
+      setLastMessage(response.data[0]?.content);
+    })();
+  }, [getMessages, getToken]);
+
+  useEffect(() => {
+    console.log(latestMessage)
+    if (latestMessage[0]?.contactId === contactId) {
+      setLastMessage(latestMessage[0]?.content);
+    }
+  }, [latestMessage, contactId]);
+
   const isActive = location.pathname === `/chat/${contactId}`;
   return (
     <Link
@@ -28,7 +53,7 @@ export default function Contact({
             <p>{contactName ? contactName : "Nobiee Nobiee"}</p>
           </div>
           <div className="prose prose-p:text-sm prose-p:text-neutral-500 prose-p:text-left">
-            <p>{lastMessage ? lastMessage : "Message"}</p>
+            <p>{lastMessage ? lastMessage : ""}</p>
           </div>
         </div>
         <div className="self-start mt-1">

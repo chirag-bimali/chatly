@@ -19,6 +19,7 @@ export default function ContactLists() {
   const { getContacts } = useContext(APIContext);
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
+  const [currUser, setCurrUser] = useState(null);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -26,7 +27,6 @@ export default function ContactLists() {
   });
   const { getToken, getUser } = useContext(AuthContext);
   const [contacts, setContacts] = useState([]);
-  let user = getUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +49,7 @@ export default function ContactLists() {
         });
         setContacts(response.data);
         setLoading(false);
+        setCurrUser(getUser());
       } catch (e) {
         if (e instanceof AuthenticationError) {
           navigate("/login");
@@ -87,7 +88,7 @@ export default function ContactLists() {
       >
         {contacts.map((data) => {
           let contactUser;
-          if (data.contactId == user.id) {
+          if (data.contactId == currUser.id) {
             contactUser = data.user;
           } else contactUser = data.contactUser;
 

@@ -50,7 +50,6 @@ public class MessagesController : ControllerBase
             if (receiver == null) throw new NotFoundException("Receiver does not exist");
             await _hub.Clients.User(receiver)
                 .SendAsync("ReceiveMessage", ApiResponse<MessageResponseDto>.SuccessResponse(responseDto));
-            Console.WriteLine(receiver);
 
             return CreatedAtAction(nameof(ReadMessages), ApiResponse<MessageResponseDto>.SuccessResponse(responseDto,
                 "Message sent", null,
@@ -88,6 +87,23 @@ public class MessagesController : ControllerBase
             if (currUser == null) throw new ApplicationUnauthorizedAccessException("You are not logged in");
             var messages = await _repository.CreateManyAsync(contactIds: request.ContactIds, currUser, request.Content,
                 replyMessageId: request.ReplyMessageId, request.ForwardMessageId);
+
+            foreach (var m in messages)
+            {
+                if (m.Contact == null) continue;
+                var contactUser = m.Contact.UserId == currUser ? m.Contact.ContactUser : m.Contact.User;
+                if (contactUser == null) continue;
+
+                await _hub.Clients.User(contactUser.Id)
+                    .SendAsync("ReceiveMessage",
+                        ApiResponse<MessageResponseDto>.SuccessResponse(m.ToMessageResponseDto()));
+
+                await _hub.Clients.User(currUser)
+                    .SendAsync("ReceiveMessage",
+                        ApiResponse<MessageResponseDto>.SuccessResponse(m.ToMessageResponseDto()));
+            }
+
+
             return Ok(ApiResponse<object>.SuccessResponse(null, "Sent successfully", messages.Count, 200));
         }
         catch (ApplicationException ex)

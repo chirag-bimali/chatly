@@ -1,5 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
+import * as signalR from "@microsoft/signalr";
+
 import AppContext from "../Context/AppContext";
+import AuthContext from "../Context/AuthContext";
+
+let HUB_ROUTE = "http://localhost:5280/hubs";
 
 export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
@@ -8,6 +13,10 @@ export default function AppProvider({ children }) {
   const [forwardContacts, setForwardContacts] = useState([]);
   const replyIdRef = useRef(null);
   const forwardIdRef = useRef(null);
+  const [latestMessage, setLatestMessage] = useState([]);
+
+  const connectionRef = useRef(null);
+  const { getToken } = useContext(AuthContext);
 
   useEffect(() => {
     const handleClick = () => {
@@ -31,6 +40,46 @@ export default function AppProvider({ children }) {
     };
   }, [globalContextMenu]);
 
+  useEffect(() => {
+    try {
+      const token = getToken();
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
+      }
+
+      const messageHubURL = `${HUB_ROUTE}/messages`;
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl(messageHubURL, {
+          accessTokenFactory: () => token,
+        })
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+      connectionRef.current = connection;
+
+      connection.on("ReceiveMessage", (messageResponse) => {
+        setLatestMessage([messageResponse.data]);
+      });
+
+      connection
+        .start()
+        .then(() => console.log("Connected to SignalR"))
+        .catch((err) => console.error("SignalR Connection Error:", err));
+
+      return () => {
+        if (connectionRef.current) {
+          connectionRef.current.off("ReceiveMessage");
+          connectionRef.current.stop();
+          connectionRef.current = null;
+        }
+      };
+    } catch (e) {
+      e;
+    }
+  }, [getToken]);
+
   return (
     <AppContext.Provider
       value={{
@@ -44,6 +93,8 @@ export default function AppProvider({ children }) {
         forwardIdRef,
         forwardContacts,
         setForwardContacts,
+        latestMessage,
+        setLatestMessage,
       }}
     >
       {children}

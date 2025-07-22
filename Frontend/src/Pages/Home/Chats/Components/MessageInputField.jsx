@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppContext from "../../../../Context/AppContext";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
@@ -25,6 +25,7 @@ export default function MessageInputField({
 
   const { sendMessage, sendMessageToMany } = useContext(APIContext);
   const { getToken, getUser } = useContext(AuthContext);
+  const { setLatestMessage } = useContext(AppContext);
 
   const [chatContent, setChatContent] = useState("");
   const contactId = chatDetails.id;
@@ -51,14 +52,12 @@ export default function MessageInputField({
       }
       if (forwardModeOn) {
         // Send Forward message
-        const response = await sendMessageToMany({
+        await sendMessageToMany({
           contactIds: forwardContacts,
           forwardMessageId: forwardIdRef.current,
           content: chatContent,
           token: getToken(),
         });
-        console.log("Messages sent successfully:", response?.data);
-
         // Clear Input Field
         setChatContent("");
 
@@ -79,6 +78,7 @@ export default function MessageInputField({
         content: chatContent,
         token: getToken(),
       });
+      setLatestMessage([response.data]);
       setMessages((prev) => [...prev, response.data]);
       setChatContent("");
       if (replyModeOn) setReplyModeOn(false);

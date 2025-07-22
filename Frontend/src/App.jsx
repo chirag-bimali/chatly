@@ -12,8 +12,8 @@ import AppContext from "./Context/AppContext";
 
 function App() {
   return (
-    <AppProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <AppProvider>
         <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
           <Router>
             <Routes>
@@ -23,8 +23,8 @@ function App() {
             </Routes>
           </Router>
         </div>
-      </AuthProvider>
-    </AppProvider>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 

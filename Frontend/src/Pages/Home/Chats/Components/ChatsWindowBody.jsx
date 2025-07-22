@@ -17,6 +17,7 @@ export default function ChatsWindowBody({
 
   const { getMessages } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
+  const { latestMessage } = useContext(AppContext);
   const [skip, setSkip] = useState(0);
   const [pageSize, _] = useState(10);
   const [totalMessages, setTotalMessages] = useState(0);
@@ -68,6 +69,30 @@ export default function ChatsWindowBody({
     setMessages,
     skip,
     messageUpdateReason,
+  ]);
+
+  useEffect(() => {
+    if (latestMessage?.length) {
+      setMessages((prev) => {
+        const currentContactMessages = latestMessage?.filter(
+          (lm) => lm.contactId === contactDetails?.id
+        );
+        const AmIReceiver = currentContactMessages?.filter((m) => {
+          return m?.senderId === contactUserDetails.id;
+        });
+        if (latestMessage?.length) {
+          return [...prev, ...AmIReceiver];
+        }
+        return prev;
+      });
+      messageUpdateReason.current = "new";
+    }
+  }, [
+    latestMessage,
+    setMessages,
+    messageUpdateReason,
+    contactDetails.id,
+    contactUserDetails,
   ]);
 
   useEffect(() => {

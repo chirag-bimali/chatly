@@ -6,9 +6,12 @@ import LogoutIcon from "../assets/logout-icon.svg?react";
 import { useState, useContext, useEffect } from "react";
 import AppContext from "../Context/AppContext";
 import UserProfileMenu from "./UserProfileMenu";
+import AuthContext from "../Context/AuthContext";
 
 export default function TopBar({ showProfile }) {
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
+  const { getUser } = useContext(AuthContext);
+  const currUser = getUser();
   const [contextMenu, setContextMenu] = useState({
     visible: false, // Should the menu be shown?
     x: 0, // X position on screen
@@ -33,7 +36,7 @@ export default function TopBar({ showProfile }) {
         </div>
       </Link>
       <div
-        className={"rounded-full bg-black h-10 relative cursor-pointer"}
+        className={"flex items-center justify-center gap-4 cursor-pointer"}
         id="profile-btn"
         onClick={(e) => {
           e.preventDefault();
@@ -52,8 +55,13 @@ export default function TopBar({ showProfile }) {
           }
         }}
       >
-        <DefaultUserProfile className={showProfile ? "block" : "hidden"} />
-        <UserProfileMenu contextMenu={contextMenu} />
+        <div className="rounded-full h-10 relative cursor-pointer flex items-center">
+          <p>{currUser.userName}</p>
+        </div>
+        <div className="relative">
+          <DefaultUserProfile className={showProfile ? "block" : "hidden"} />
+          <UserProfileMenu contextMenu={contextMenu} />
+        </div>
       </div>
     </div>
   );

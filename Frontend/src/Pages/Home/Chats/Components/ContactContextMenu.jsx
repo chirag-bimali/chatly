@@ -8,7 +8,7 @@ import Window from "../../../../assets/window-icon.svg?react";
 
 import ContactContextMenuOption from "./ContactContextMenuOption";
 
-export default function ContactContextMenu({ contextMenu }) {
+export default function ContactContextMenu({ contextMenu, contactId }) {
   if (!contextMenu.visible) {
     return null;
   }
@@ -22,16 +22,14 @@ export default function ContactContextMenu({ contextMenu }) {
         <ContactContextMenuOption
           icon={Window}
           label={"Open in new tab"}
-          onClick={() => {}}
+          onClick={() => {
+            window.open(`/chat/${contactId}`, "_blank");
+            console.log("Hello")
+          }}
         />
         <ContactContextMenuOption
           icon={Archive}
           label={"Archive"}
-          onClick={() => {}}
-        />
-        <ContactContextMenuOption
-          icon={Window}
-          label={"Open in new tab"}
           onClick={() => {}}
         />
         <ContactContextMenuOption icon={Pin} label={"Pin"} onClick={() => {}} />

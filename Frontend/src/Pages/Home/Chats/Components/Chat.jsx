@@ -78,7 +78,7 @@ export default function Chat({ imgSrc, message }) {
               </p>
             </div>
           )}
-          
+
           {/* If message is forwarded */}
           {message?.forwardMessage?.id && (
             <p className="text-xs text-slate-500 font-medium mb-1">
@@ -114,7 +114,7 @@ export default function Chat({ imgSrc, message }) {
             </p>
           </div>
         </div>
-        <MessageContextMenu contextMenu={contextMenu} />
+        <MessageContextMenu contextMenu={contextMenu} message={message} />
       </div>
     </div>
   );

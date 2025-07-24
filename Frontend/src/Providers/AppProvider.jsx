@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import * as signalR from "@microsoft/signalr";
+import { toast } from "react-hot-toast";
 
 import AppContext from "../Context/AppContext";
 import AuthContext from "../Context/AuthContext";
+import AuthenticationError from "../Exceptions/AuthenticationError";
 
 let HUB_ROUTE = "http://localhost:5280/hubs";
 
@@ -14,9 +16,26 @@ export default function AppProvider({ children }) {
   const replyIdRef = useRef(null);
   const forwardIdRef = useRef(null);
   const [latestMessage, setLatestMessage] = useState([]);
-
   const connectionRef = useRef(null);
-  const { getToken } = useContext(AuthContext);
+  const { getToken, getUser } = useContext(AuthContext);
+  const [token, setToken] = useState();
+  const [currUser, setCurrUser] = useState();
+  useEffect(() => {
+    (async function () {
+      try {
+        const token = getToken();
+        console.log(token);
+        const user = getUser();
+        console.log(user);
+        setToken(token);
+        setCurrUser(user);
+      } catch (e) {
+        setCurrUser(null);
+        setToken(null);
+        throw new AuthenticationError("User not authenticated");
+      }
+    })();
+  }, [getToken, getUser]);
 
   useEffect(() => {
     const handleClick = () => {
@@ -95,6 +114,9 @@ export default function AppProvider({ children }) {
         setForwardContacts,
         latestMessage,
         setLatestMessage,
+        token,
+        currUser,
+        setCurrUser,
       }}
     >
       {children}

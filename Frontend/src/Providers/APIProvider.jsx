@@ -203,6 +203,84 @@ export default function APIProvider({ children }) {
   },
   []);
 
+  const changeName = useCallback(async function ({
+    userName,
+    displayName,
+    token,
+  }) {
+    let route = `${API_ROUTE}/Users/UpdateMe`;
+    let response = await axios.patch(
+      route,
+      {
+        UserName: userName,
+        DisplayName: displayName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+  const changeEmail = useCallback(async function ({
+    newEmail,
+    password,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changeEmail`;
+    let response = await axios.patch(
+      route,
+      {
+        NewEmail: newEmail,
+        Password: password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
+  const changeProfilePic = useCallback(async function ({ image, token }) {
+    let route = `${API_ROUTE}/Users/UpdateProfilePicture`;
+    let formData = new FormData();
+    formData.append("image", image);
+    let response = await axios.patch(route, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }, []);
+
+  const changePassword = useCallback(async function ({
+    oldPassword,
+    newPassword,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changePassword`;
+    let response = await axios.patch(
+      route,
+      {
+        OldPassword: oldPassword,
+        NewPassword: newPassword,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
   return (
     <APIContext.Provider
       value={{
@@ -215,6 +293,10 @@ export default function APIProvider({ children }) {
         sendMessageToMany,
         createContact,
         changeContactStatus,
+        changeName,
+        changeProfilePic,
+        changeEmail,
+        changePassword,
       }}
     >
       {children}

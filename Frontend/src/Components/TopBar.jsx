@@ -9,9 +9,8 @@ import UserProfileMenu from "./UserProfileMenu";
 import AuthContext from "../Context/AuthContext";
 
 export default function TopBar({ showProfile }) {
-  const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
-  const { getUser } = useContext(AuthContext);
-  const [currUser, setCurrUser] = useState(null);
+  const { globalContextMenu, setGlobalContextMenu, currUser } =
+    useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState({
@@ -23,14 +22,13 @@ export default function TopBar({ showProfile }) {
   useEffect(() => {
     try {
       if (!currUser) {
-        setCurrUser(getUser());
         setLoading(false);
       }
     } catch (e) {
       console.log(e);
       navigate("/login");
     }
-  }, [currUser, navigate, getUser]);
+  }, [navigate, currUser]);
 
   useEffect(() => {
     if (!globalContextMenu) {
@@ -72,7 +70,7 @@ export default function TopBar({ showProfile }) {
           }}
         >
           <div className="rounded-full h-10 relative cursor-pointer flex items-center">
-            <p>{currUser.userName}</p>
+            <p>{currUser?.userName}</p>
           </div>
           <div className="relative">
             <DefaultUserProfile className={showProfile ? "block" : "hidden"} />

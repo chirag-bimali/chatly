@@ -47,8 +47,6 @@ function AuthProvider({ children }) {
           "PASSWORD"
         );
       }
-      console.log(credentials);
-
       let message = await axios.post(`${API_ROUTE}/login`, credentials, {
         headers: {
           "Content-Type": "application/json",
@@ -117,9 +115,14 @@ function AuthProvider({ children }) {
     }
   }
 
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  }
+
   return (
     <AuthContext.Provider
-      value={{ login, saveToken, getToken, saveUser, getUser, signup }}
+      value={{ login, saveToken, getToken, saveUser, getUser, signup, logout }}
     >
       {children}
     </AuthContext.Provider>

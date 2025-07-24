@@ -253,7 +253,7 @@ public class AccountsController : ControllerBase
             string.IsNullOrEmpty(request.NewPassword)
         )
         {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid password provided.",
+            return BadRequest(ApiResponse<object>.ErrorResponse("All fields are required.",
                 statusCode: StatusCodes.Status400BadRequest, errorCode: "INVALID_PASSWORD",
                 details: "The provided password is invalid."));
         }
@@ -274,7 +274,7 @@ public class AccountsController : ControllerBase
         if (!result)
         {
             return Unauthorized(
-                ApiResponse<object>.ErrorResponse("Unauthorized user.",
+                ApiResponse<object>.ErrorResponse("Invalid password provided.",
                     statusCode: StatusCodes.Status401Unauthorized, errorCode: "UNAUTHORIZED",
                     "The user is not allowed to change your password.")
             );
@@ -297,6 +297,14 @@ public class AccountsController : ControllerBase
             return BadRequest(ApiResponse<object>.ErrorResponse("Invalid password provided.",
                 statusCode: StatusCodes.Status400BadRequest, errorCode: "INVALID_FIELDS",
                 details: "The provided password is invalid."));
+        }
+
+
+        if (!string.IsNullOrEmpty(request.NewEmail) && !new EmailAddressAttribute().IsValid(request.NewEmail))
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid email format.",
+                statusCode: StatusCodes.Status400BadRequest, errorCode: "INVALID_EMAIL",
+                details: "The provided email is not in a valid format."));
         }
 
 
@@ -330,7 +338,7 @@ public class AccountsController : ControllerBase
         if (!result)
         {
             return Unauthorized(
-                ApiResponse<object>.ErrorResponse("Unauthorized user.",
+                ApiResponse<object>.ErrorResponse("Invalid password provided.",
                     statusCode: StatusCodes.Status401Unauthorized, errorCode: "UNAUTHORIZED",
                     "The user is not allowed to change your password.")
             );

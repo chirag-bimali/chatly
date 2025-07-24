@@ -84,6 +84,17 @@ public class UserRepository : IUserRepository
             throw new ApplicationException("Profile picture path does not exist");
         }
 
+        // Check if user already has a profile picture with any extension
+        var existingFile = Directory
+            .GetFiles(profilePictureDirectory)
+            .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == user.Id);
+
+        // Delete existing profile picture if found
+        if (!string.IsNullOrEmpty(existingFile))
+        {
+            File.Delete(existingFile);
+        }
+
         var imagePath = Path.Combine(profilePictureDirectory, user.Id) + extension;
 
         using (var stream = new FileStream(imagePath, FileMode.Create))

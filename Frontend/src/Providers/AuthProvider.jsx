@@ -83,9 +83,6 @@ function AuthProvider({ children }) {
     }
   }
   function saveToken(token) {
-    if (!token) {
-      throw new ArgumentError("Invalid token");
-    }
     localStorage.setItem("token", token);
   }
   const getToken = useCallback(function () {

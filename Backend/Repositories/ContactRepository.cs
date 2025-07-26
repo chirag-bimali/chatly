@@ -296,17 +296,8 @@ public class ContactRepository : IContactRepository
                 .Include(c => c.ContactUser)
                 .Where(x =>
                     (x.UserId == userId || x.ContactId == userId)
-                );
+                ).OrderByDescending(c => c.Message != null ? c.Message.CreatedAt : c.CreatedAt).AsQueryable();
             
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
-            Console.WriteLine(query);
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
-            Console.WriteLine("------------------------");
             if (!string.IsNullOrEmpty(query))
             {
                 queryable = queryable.Where(c =>

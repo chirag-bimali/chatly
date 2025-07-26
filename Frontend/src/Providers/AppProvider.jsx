@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import AppContext from "../Context/AppContext";
 import AuthContext from "../Context/AuthContext";
 import AuthenticationError from "../Exceptions/AuthenticationError";
+import { useNavigate } from "react-router-dom";
 
 let HUB_ROUTE = "http://localhost:5280/hubs";
 
@@ -20,22 +21,36 @@ export default function AppProvider({ children }) {
   const { getToken, getUser } = useContext(AuthContext);
   const [token, setToken] = useState();
   const [currUser, setCurrUser] = useState();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const html = document.querySelector("html");
+
+    if (currUser?.theme === "system" || !currUser?.theme) {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)")?.matches;
+      html.setAttribute("data-theme", isDark ? "dark" : "light");
+    } else {
+      html.setAttribute("data-theme", currUser?.theme || "light");
+    }
+  }, [currUser?.theme]);
+
   useEffect(() => {
     (async function () {
       try {
         const token = getToken();
-        console.log(token);
         const user = getUser();
-        console.log(user);
+        if (token === null || token === undefined || token.length < 10) {
+          throw new AuthenticationError("User not authenticated");
+        }
         setToken(token);
         setCurrUser(user);
-      } catch (e) {
+      } catch (_) {
+        _; // Handle error silently
         setCurrUser(null);
         setToken(null);
-        throw new AuthenticationError("User not authenticated");
       }
     })();
-  }, [getToken, getUser]);
+  }, [getToken, getUser, navigate]);
 
   useEffect(() => {
     const handleClick = () => {
@@ -61,7 +76,9 @@ export default function AppProvider({ children }) {
 
   useEffect(() => {
     try {
-      const token = getToken();
+      if (!token) {
+        return;
+      }
       if (connectionRef.current) {
         connectionRef.current.stop();
         connectionRef.current = null;
@@ -73,7 +90,6 @@ export default function AppProvider({ children }) {
           accessTokenFactory: () => token,
         })
         .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Information)
         .build();
 
       connectionRef.current = connection;
@@ -95,9 +111,10 @@ export default function AppProvider({ children }) {
         }
       };
     } catch (e) {
-      e;
+      console.error("Error setting up SignalR connection:", e);
+      toast.error("Failed to connect to the server. Please try again later.");
     }
-  }, [getToken]);
+  }, [token]);
 
   return (
     <AppContext.Provider
@@ -115,6 +132,7 @@ export default function AppProvider({ children }) {
         latestMessage,
         setLatestMessage,
         token,
+        setToken,
         currUser,
         setCurrUser,
       }}

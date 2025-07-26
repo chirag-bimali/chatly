@@ -7,6 +7,7 @@ import { useState, useContext, useEffect } from "react";
 import AppContext from "../Context/AppContext";
 import UserProfileMenu from "./UserProfileMenu";
 import AuthContext from "../Context/AuthContext";
+import ProfileImage from "./ProfilePicture";
 
 export default function TopBar({ showProfile }) {
   const { globalContextMenu, setGlobalContextMenu, currUser } =
@@ -73,7 +74,12 @@ export default function TopBar({ showProfile }) {
             <p>{currUser?.userName}</p>
           </div>
           <div className="relative">
-            <DefaultUserProfile className={showProfile ? "block" : "hidden"} />
+            <div className="h-15 w-15 rounded-full overflow-hidden flex items-center justify-center">
+              <ProfileImage
+                className="h-10 w-10 rounded-full"
+                userId={currUser?.id}
+              />
+            </div>
             <UserProfileMenu contextMenu={contextMenu} />
           </div>
         </div>

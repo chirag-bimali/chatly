@@ -206,6 +206,7 @@ export default function APIProvider({ children }) {
   const changeName = useCallback(async function ({
     userName,
     displayName,
+    themeName,
     token,
   }) {
     let route = `${API_ROUTE}/Users/UpdateMe`;
@@ -214,6 +215,7 @@ export default function APIProvider({ children }) {
       {
         UserName: userName,
         DisplayName: displayName,
+        Theme: themeName,
       },
       {
         headers: {
@@ -281,6 +283,16 @@ export default function APIProvider({ children }) {
   },
   []);
 
+  const deleteAccount = useCallback(async function ({ token }) {
+    let route = `${API_ROUTE}/users/deleteme`;
+    let response = await axios.delete(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }, []);
+
   return (
     <APIContext.Provider
       value={{
@@ -297,6 +309,8 @@ export default function APIProvider({ children }) {
         changeProfilePic,
         changeEmail,
         changePassword,
+        deleteAccount,
+        API_ROUTE,
       }}
     >
       {children}

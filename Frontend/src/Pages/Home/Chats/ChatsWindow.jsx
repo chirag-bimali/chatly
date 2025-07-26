@@ -191,6 +191,7 @@ export default function ChatsWindow() {
           chatDetails={chatDetails}
           draftMode={draftMode}
           contactUserDetails={contactUserDetails}
+          setChatDetails={setChatDetails}
         />
         <div className="flex flex-1 flex-col overflow-hidden relative">
           <ChatsWindowBody
@@ -289,6 +290,7 @@ export default function ChatsWindow() {
             messages={messages}
             setMessages={setMessages}
             chatDetails={chatDetails}
+            setChatDetails={setChatDetails}
             messageUpdateReason={messageUpdateReason}
           />
         </div>

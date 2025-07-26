@@ -3,6 +3,7 @@ import AppContext from "../../../../Context/AppContext";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 import CloseIcon from "../../../../assets/close-icon.svg?react";
+import toast from "react-hot-toast";
 
 export default function MessageInputField({
   chatDetails,
@@ -85,6 +86,13 @@ export default function MessageInputField({
       messageUpdateReason.current = "new";
     } catch (e) {
       console.error(e);
+      setChatContent("");
+      if (replyModeOn) setReplyModeOn(false);
+      if (forwardModeOn) {
+        setForwardModeOn(false);
+        setForwardContacts([]);
+      }
+      toast.error(e?.response?.data?.message || "Failed to send message");
     }
   }
 

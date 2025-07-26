@@ -22,13 +22,13 @@ export default function Login() {
         Password: password,
       });
       // BUG
-      setEmailMessage("Hello")
+      setEmailMessage("Hello");
       setEmail("");
       setPassword("");
       saveToken(response.data.token);
+      console.log("User data:", response.data.user);
       saveUser(response.data.user);
-      console.log("Logged in successfully");
-      navigate("/");
+      window.location.href = "/";
     } catch (e) {
       if (e instanceof NetworkError) {
         setEmailMessage(e.message);

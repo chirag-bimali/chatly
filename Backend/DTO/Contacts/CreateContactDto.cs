@@ -1,4 +1,5 @@
 using Chatly.DTO.Accounts;
+using Chatly.DTO.Messages;
 using Chatly.Models;
 
 namespace Chatly.DTO.Contacts;
@@ -18,11 +19,13 @@ public class ContactDto
     public string? Id { get; set; }
     public string? UserId { get; set; }
     public string? ContactId { get; set; }
-    public string? ActorId { get; set; } 
+    public string? ActorId { get; set; }
 
     public UserDto? User { get; set; }
     public UserDto? ContactUser { get; set; }
     public UserDto? Actor { get; set; }
+    public string? MessageId { get; set; }
+    public MessageResponseDto? Message { get; set; }
 
     public string? Status { get; set; }
     public DateTime? CreatedAt { get; set; }

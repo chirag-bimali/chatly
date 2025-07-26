@@ -1,12 +1,14 @@
 import UserProfileMenuItem from "./UserProfileMenuItems";
 import SettingsIcon from "../assets/settings-icon.svg?react";
 import LogoutIcon from "../assets/logout-icon.svg?react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../Context/AuthContext";
 
 export default function UserProfileMenu({ contextMenu }) {
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
   const [width, setWindth] = useState(0);
   const [height, setHeight] = useState(0);
 
@@ -55,6 +57,7 @@ export default function UserProfileMenu({ contextMenu }) {
         icon={LogoutIcon}
         label={"Logout"}
         onClick={() => {
+          logout();
           navigate("/login");
         }}
         data={{ route: "/login" }}

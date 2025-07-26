@@ -7,11 +7,11 @@ import { useState, useContext, useEffect } from "react";
 import AppContext from "../Context/AppContext";
 import UserProfileMenu from "./UserProfileMenu";
 import AuthContext from "../Context/AuthContext";
+import ProfileImage from "./ProfilePicture";
 
 export default function TopBar({ showProfile }) {
-  const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
-  const { getUser } = useContext(AuthContext);
-  const [currUser, setCurrUser] = useState(null);
+  const { globalContextMenu, setGlobalContextMenu, currUser, API_ROUTE } =
+    useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState({
@@ -20,17 +20,17 @@ export default function TopBar({ showProfile }) {
     y: 0, // Y position on screen
   });
 
+
   useEffect(() => {
     try {
       if (!currUser) {
-        setCurrUser(getUser());
         setLoading(false);
       }
     } catch (e) {
       console.log(e);
       navigate("/login");
     }
-  }, [currUser, navigate, getUser]);
+  }, [navigate, currUser]);
 
   useEffect(() => {
     if (!globalContextMenu) {
@@ -72,10 +72,15 @@ export default function TopBar({ showProfile }) {
           }}
         >
           <div className="rounded-full h-10 relative cursor-pointer flex items-center">
-            <p>{currUser.userName}</p>
+            <p>{currUser?.userName}</p>
           </div>
           <div className="relative">
-            <DefaultUserProfile className={showProfile ? "block" : "hidden"} />
+            <div className="h-15 w-15 rounded-full overflow-hidden flex items-center justify-center">
+              <ProfileImage
+                className="h-10 w-10 rounded-full"
+                userId={currUser?.id}
+              />
+            </div>
             <UserProfileMenu contextMenu={contextMenu} />
           </div>
         </div>

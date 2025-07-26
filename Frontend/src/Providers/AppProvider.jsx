@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import * as signalR from "@microsoft/signalr";
+import { toast } from "react-hot-toast";
 
 import AppContext from "../Context/AppContext";
 import AuthContext from "../Context/AuthContext";
+import AuthenticationError from "../Exceptions/AuthenticationError";
+import { useNavigate } from "react-router-dom";
 
-let HUB_ROUTE = "http://localhost:5280/hubs";
+// let HUB_ROUTE = "http://localhost:5280/hubs";
+let HUB_ROUTE = "https://chatlyapi.chiragbimali.com.np/hubs";
 
 export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
@@ -14,9 +18,123 @@ export default function AppProvider({ children }) {
   const replyIdRef = useRef(null);
   const forwardIdRef = useRef(null);
   const [latestMessage, setLatestMessage] = useState([]);
-
   const connectionRef = useRef(null);
-  const { getToken } = useContext(AuthContext);
+  const { getToken, getUser } = useContext(AuthContext);
+  const [token, setToken] = useState();
+  const [currUser, setCurrUser] = useState();
+  const [imageCache, setImageCache] = useState({});
+  const [requestedImages, setRequestedImages] = useState(new Set());
+  const [loadingImages, setLoadingImages] = useState(new Set());
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const html = document.querySelector("html");
+
+    if (currUser?.theme === "system" || !currUser?.theme) {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)")?.matches;
+      html.setAttribute("data-theme", isDark ? "dark" : "light");
+    } else {
+      html.setAttribute("data-theme", currUser?.theme || "light");
+    }
+  }, [currUser?.theme]);
+
+  // Image loading useEffect
+  useEffect(() => {
+    const loadImage = async (imageId) => {
+      console.log(`Loading image for user ${imageId}:`);
+      console.log("Token:", token);
+      console.log("Image Cache:", imageCache);
+      console.log("Requested Images:", requestedImages);
+      if (!token || imageCache[imageId] || loadingImages.has(imageId)) {
+        return;
+      }
+
+      setLoadingImages((prev) => new Set(prev).add(imageId));
+
+      try {
+        const response = await fetch(
+          `https://chatlyapi.chiragbimali.com.np/api/users/profilepicture/${imageId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const imageUrl = URL.createObjectURL(blob);
+
+          setImageCache((prev) => ({
+            ...prev,
+            [imageId]: imageUrl,
+          }));
+        } else {
+          // Handle failed responses (404, 403, etc.) by caching null
+          console.warn(`Image not available for user ${imageId}. Status: ${response.status}`);
+          setImageCache((prev) => ({
+            ...prev,
+            [imageId]: null, // Cache null to prevent retrying
+          }));
+        }
+      } catch (error) {
+        console.error(`Failed to load image for user ${imageId}:`, error);
+        // Cache null for network errors to prevent retrying
+        setImageCache((prev) => ({
+          ...prev,
+          [imageId]: null,
+        }));
+      } finally {
+        setLoadingImages((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(imageId);
+          return newSet;
+        });
+      }
+    };
+
+    // Load images for requested IDs
+    requestedImages.forEach((imageId) => {
+      if (imageCache[imageId] === undefined && !loadingImages.has(imageId)) {
+        loadImage(imageId);
+      }
+    });
+  }, [token, requestedImages, imageCache, loadingImages]);
+
+  // Function to request an image to be loaded
+  const requestImage = (imageId) => {
+    if (imageId && imageCache[imageId] === undefined && !requestedImages.has(imageId)) {
+      setRequestedImages((prev) => new Set(prev).add(imageId));
+    }
+  };
+
+  // Function to get cached image URL
+  const getCachedImage = (imageId) => {
+    const cachedValue = imageCache[imageId];
+    // Return the cached value (which could be a URL string or null for non-existent images)
+    // undefined means not yet cached, null means image doesn't exist on server
+    return cachedValue;
+  };
+
+  //
+
+  useEffect(() => {
+    (async function () {
+      try {
+        const token = getToken();
+        const user = getUser();
+        if (token === null || token === undefined || token.length < 10) {
+          throw new AuthenticationError("User not authenticated");
+        }
+        setToken(token);
+        setCurrUser(user);
+      } catch (_) {
+        _; // Handle error silently
+        setCurrUser(null);
+        setToken(null);
+      }
+    })();
+  }, [getToken, getUser, navigate]);
 
   useEffect(() => {
     const handleClick = () => {
@@ -42,7 +160,9 @@ export default function AppProvider({ children }) {
 
   useEffect(() => {
     try {
-      const token = getToken();
+      if (!token) {
+        return;
+      }
       if (connectionRef.current) {
         connectionRef.current.stop();
         connectionRef.current = null;
@@ -54,12 +174,12 @@ export default function AppProvider({ children }) {
           accessTokenFactory: () => token,
         })
         .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Information)
         .build();
 
       connectionRef.current = connection;
 
       connection.on("ReceiveMessage", (messageResponse) => {
+        console.log("Received message:", messageResponse);
         setLatestMessage([messageResponse.data]);
       });
 
@@ -76,9 +196,10 @@ export default function AppProvider({ children }) {
         }
       };
     } catch (e) {
-      e;
+      console.error("Error setting up SignalR connection:", e);
+      toast.error("Failed to connect to the server. Please try again later.");
     }
-  }, [getToken]);
+  }, [token]);
 
   return (
     <AppContext.Provider
@@ -95,6 +216,13 @@ export default function AppProvider({ children }) {
         setForwardContacts,
         latestMessage,
         setLatestMessage,
+        token,
+        setToken,
+        currUser,
+        setCurrUser,
+        requestImage,
+        getCachedImage,
+        imageCache,
       }}
     >
       {children}

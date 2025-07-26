@@ -1,11 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Chatly.Data;
 using Chatly.DTO;
 using Chatly.DTO.Accounts;
 using Chatly.Exceptions;
 using Chatly.Interfaces.Repositories;
 using Chatly.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Repositories;
@@ -65,7 +71,7 @@ public class UserRepository : IUserRepository
         if (image == null) throw new ApplicationArgumentException("Image is null", nameof(image));
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         var extension = Path.GetExtension(image.FileName);
-        if (!allowedExtensions.Contains(extension))
+        if (!allowedExtensions.Contains(extension.ToLower()))
         {
             throw new ApplicationArgumentException(
                 $"Only ->  {string.Join(", ", allowedExtensions)} are allowed", nameof(image));
@@ -162,9 +168,39 @@ public class UserRepository : IUserRepository
                 $"User with user id : {userId} could not be found");
         }
 
+        
+        //  1. Delete Every Forward Message
+        await _context.ForwardMessages.Where(m =>
+            m.Message != null &&
+            m.Message.Contact != null &&
+            (m.Message.Contact.UserId == user.Id || m.Message.Contact.ContactId == user.Id)
+        ).ExecuteDeleteAsync();
+        
+        await _context.ForwardMessages.Where(m =>
+            m.Message != null &&
+            m.PreviousContact != null &&
+            (m.PreviousContact.UserId == user.Id || m.PreviousContact.ContactId == user.Id)
+        ).ExecuteDeleteAsync();
+        
+        
+        //  2. Delete Every Reply Message
+        await _context.ReplyMessages.Where(m =>
+            m.Message != null &&
+            m.Message.Contact != null &&
+            (m.Message.Contact.UserId == user.Id || m.Message.Contact.ContactId == user.Id)
+        ).ExecuteDeleteAsync();
+        
+        //  3. Delete Ever Message
+        await _context.Messages.Where(m =>
+            m.Contact != null &&
+            (m.Contact.ContactId == user.Id || m.Contact.UserId == user.Id)
+        ).ExecuteDeleteAsync();
+
+        //  4. Delete Every Contact
         await _context.Contacts.Where(u => u.ContactId == user.Id || u.UserId == user.Id)
             .ExecuteDeleteAsync();
-        // await _context.Messages.Where(m => m.SenderId == user.Id || m.ReceiverId == user.Id).ExecuteDeleteAsync();
+        
+        //  5. Delete User
         await _userManager.DeleteAsync(user);
         return true;
     }

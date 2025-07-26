@@ -10,7 +10,7 @@ import AuthContext from "../Context/AuthContext";
 import ProfileImage from "./ProfilePicture";
 
 export default function TopBar({ showProfile }) {
-  const { globalContextMenu, setGlobalContextMenu, currUser } =
+  const { globalContextMenu, setGlobalContextMenu, currUser, API_ROUTE } =
     useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ export default function TopBar({ showProfile }) {
     x: 0, // X position on screen
     y: 0, // Y position on screen
   });
+
 
   useEffect(() => {
     try {

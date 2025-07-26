@@ -11,7 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ForwardMessageUserList from "./Components/ForwardMessageUserList";
 import AppContext from "../../../Context/AppContext";
 
-export default function ChatsWindow() {
+export default function ChatsWindow({ contacts, setContacts }) {
   const { chatId, userId } = useParams();
   const { getToken, getUser } = useContext(AuthContext);
 
@@ -35,7 +35,7 @@ export default function ChatsWindow() {
     } catch (error) {
       console.error("Failed to get user:", error);
       setCurrUser(null);
-      navigate("/login")
+      navigate("/login");
     }
   }, [getUser, navigate]);
 
@@ -290,6 +290,8 @@ export default function ChatsWindow() {
             messages={messages}
             setMessages={setMessages}
             chatDetails={chatDetails}
+            contacts={contacts}
+            setContacts={setContacts}
             setChatDetails={setChatDetails}
             messageUpdateReason={messageUpdateReason}
           />

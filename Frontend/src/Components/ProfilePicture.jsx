@@ -8,13 +8,15 @@ export default function ProfileImage({
   userId,
   className,
   uploadedImage = null,
+  // imageUrl,
+  // setImageUrl ,
 }) {
   const [imageUrl, setImageUrl] = useState(null);
   const { API_ROUTE } = useContext(APIContext);
   const [loading, setLoading] = useState(true);
   // Fetch the profile image from the API
   // and set it to the imageUrl state
-  const { token } = useContext(AppContext);
+  const { token, requestImage, getCachedImage } = useContext(AppContext);
 
   useEffect(() => {
     // If there's an uploaded image, create a URL for it and use it immediately
@@ -29,31 +31,35 @@ export default function ProfileImage({
       };
     }
 
-    // Reset imageUrl when uploadedImage becomes null
+    // Reset for new userId or when uploadedImage becomes null
     setImageUrl(null);
     setLoading(true);
 
-    // Otherwise, fetch from API if token exists
-    if (!token) return;
+    // Check if we have cached image first
+    if (userId) {
+      const cachedImage = getCachedImage(userId);
+      if (cachedImage !== undefined) {
+        // cachedImage is either a URL string or null (image doesn't exist)
+        setImageUrl(cachedImage);
+        setLoading(false);
+      } else {
+        // undefined means not yet cached, so request the image
+        requestImage(userId);
+      }
+    }
+  }, [userId, uploadedImage, getCachedImage, requestImage]);
 
-    fetch(`${API_ROUTE}/users/profilepicture/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch profile image");
-        return res.blob();
-      })
-      .then((blob) => {
-        const url = URL.createObjectURL(blob);
-        setImageUrl(url);
+  // Listen for cache updates
+  useEffect(() => {
+    if (userId && !uploadedImage) {
+      const cachedImage = getCachedImage(userId);
+      if (cachedImage !== undefined && cachedImage !== imageUrl) {
+        // Update with the cached result (URL or null)
+        setImageUrl(cachedImage);
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, [token, API_ROUTE, uploadedImage, userId]);
+      }
+    }
+  }, [userId, uploadedImage, getCachedImage, imageUrl]);
 
   // Render the image or a placeholder image if not loaded yet
   if (loading) {

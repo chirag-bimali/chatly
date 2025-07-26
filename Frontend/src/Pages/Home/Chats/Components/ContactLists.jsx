@@ -12,13 +12,15 @@ import { useNavigate } from "react-router-dom";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 import AuthenticationError from "../../../../Exceptions/AuthenticationError";
+import App from "../../../../App";
+import AppContext from "../../../../Context/AppContext";
 
-export default function ContactLists() {
+export default function ContactLists({ contacts, setContacts }) {
   const { getContacts } = useContext(APIContext);
+  const { latestMessage } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const [currUser, setCurrUser] = useState(null);
   const { getToken, getUser } = useContext(AuthContext);
-  const [contacts, setContacts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +41,24 @@ export default function ContactLists() {
         setLoading(false);
       }
     })();
-  }, [getContacts, getToken, navigate, getUser]);
+  }, [getContacts, getToken, navigate, getUser, setContacts]);
+
+  useEffect(() => {
+    console.log("Latest message updated:", latestMessage);
+    if (latestMessage.length > 0) {
+      setContacts((prevContacts) => {
+        return prevContacts.map((contact) => {
+          if (contact.id === latestMessage[0]?.contactId) {
+            return {
+              ...contact,
+              message: latestMessage[0],
+            };
+          }
+          return contact;
+        });
+      });
+    }
+  }, [latestMessage, setContacts]);
 
   const containerRef = useRef(null);
   if (contacts?.length === 0 && !loading) return <NoContactDisplay />;
@@ -53,23 +72,30 @@ export default function ContactLists() {
   return (
     !loading && (
       <div className="overflow-y-auto flex-1" ref={containerRef}>
-        {contacts.map((data) => {
-          console.log(data);
-          let contactUser;
-          if (data.contactId == currUser.id) {
-            contactUser = data.user;
-          } else contactUser = data.contactUser;
+        {/* sort message by data.message.createdAt */}
+        {contacts
+          .sort((a, b) => {
+            return (
+              new Date(b?.message?.createdAt) - new Date(a?.message?.createdAt)
+            );
+          })
+          .map((data) => {
+            let contactUser;
+            if (data.contactId == currUser.id) {
+              contactUser = data.user;
+            } else contactUser = data.contactUser;
 
-          return (
-            <Contact
-              isActive={true}
-              key={data.id}
-              contactId={data.id}
-              contactName={contactUser.displayName}
-              contactUser={contactUser}
-            />
-          );
-        })}
+            return (
+              <Contact
+                isActive={true}
+                key={data.id}
+                contactId={data.id}
+                contactName={contactUser.displayName}
+                contactUser={contactUser}
+                setContacts={setContacts}
+              />
+            );
+          })}
       </div>
     )
   );

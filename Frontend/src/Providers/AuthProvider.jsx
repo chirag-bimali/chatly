@@ -8,7 +8,8 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import UserNotFound from "../Exceptions/UserNotFound";
 import { useCallback } from "react";
 
-const API_ROUTE = `http://localhost:5280/api/accounts`;
+// const API_ROUTE = `http://localhost:5280/api/accounts`;
+const API_ROUTE = `https://chatlyapi.chiragbimali.com.np/api/accounts`;
 
 function isPlainObjectStrict(obj) {
   if (typeof obj !== "object" || obj === null) return false;

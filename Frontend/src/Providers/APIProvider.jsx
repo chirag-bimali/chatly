@@ -7,7 +7,8 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import ArgumentError from "../Exceptions/ArgumentError";
 import { useCallback } from "react";
 
-let API_ROUTE = "http://localhost:5280/api";
+// let API_ROUTE = "http://localhost:5280/api";
+let API_ROUTE = "https://chatlyapi.chiragbimali.com.np/api";
 
 export default function APIProvider({ children }) {
   async function searchUsers({

@@ -294,6 +294,7 @@ public class ContactRepository : IContactRepository
             var queryable = _dbContext.Contacts
                 .Include(c => c.User)
                 .Include(c => c.ContactUser)
+                .Include(c => c.Message)
                 .Where(x =>
                     (x.UserId == userId || x.ContactId == userId)
                 ).OrderByDescending(c => c.Message != null ? c.Message.CreatedAt : c.CreatedAt).AsQueryable();

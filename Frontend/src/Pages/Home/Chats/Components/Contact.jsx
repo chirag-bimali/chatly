@@ -5,17 +5,20 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "../../../../Context/AuthContext";
 import AppContext from "../../../../Context/AppContext";
 import ContactContextMenu from "./ContactContextMenu";
+import ProfileImage from "../../../../Components/ProfilePicture";
+import { formatDistance, formatDistanceToNow } from "date-fns";
 export default function Contact({
   contactName,
   contactId,
-  lastMessageTime,
   profileImageUrl,
+  contactUser,
 }) {
   let location = useLocation();
   const { getMessages } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
   const { latestMessage } = useContext(AppContext);
   const [lastMessage, setLastMessage] = useState("");
+  const [lastMessageTime, setLastMessageTime] = useState(Date.now());
 
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
 
@@ -44,6 +47,7 @@ export default function Contact({
         take: 1,
       });
       setLastMessage(response.data[0]?.content);
+      setLastMessageTime(response.data[0]?.createdAt);
     })();
   }, [getMessages, getToken]);
 
@@ -77,11 +81,18 @@ export default function Contact({
         }`}
       >
         <div className="flex items-start px-2 py-4 justify-between gap-3.5 prose prose-p:font-normal">
-          <img
+          {/* <img
             src={profileImageUrl ? profileImageUrl : DefaultUserProfile}
             alt={contactName + " profile picture"}
             className="mb-0 self-center"
-          />
+          /> */}
+          <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+            <ProfileImage
+              userId={contactUser?.id}
+              uploadedImage={profileImageUrl}
+              className={"h-full w-full rounded-full"}
+            />
+          </div>
           <div className="flex-grow">
             <div className="prose prose-p:text-base prose-p:text-neutral-950 dark:prose-p:text-neutral-50 prose-p:text-left">
               <p>{contactName ? contactName : "Nobiee Nobiee"}</p>
@@ -92,7 +103,13 @@ export default function Contact({
           </div>
           <div className="self-start mt-1">
             <div className="prose prose-p:text-xs prose-h1:text-right">
-              <p>{lastMessageTime ? lastMessageTime : "10:00 AM"}</p>
+              <p>
+                {lastMessageTime
+                  ? formatDistanceToNow(new Date(lastMessageTime), {
+                      addSuffix: true,
+                    })
+                  : ""}
+              </p>
             </div>
           </div>
         </div>

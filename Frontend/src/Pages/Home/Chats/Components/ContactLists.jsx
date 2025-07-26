@@ -54,6 +54,7 @@ export default function ContactLists() {
     !loading && (
       <div className="overflow-y-auto flex-1" ref={containerRef}>
         {contacts.map((data) => {
+          console.log(data);
           let contactUser;
           if (data.contactId == currUser.id) {
             contactUser = data.user;
@@ -65,7 +66,7 @@ export default function ContactLists() {
               key={data.id}
               contactId={data.id}
               contactName={contactUser.displayName}
-              contact={data}
+              contactUser={contactUser}
             />
           );
         })}

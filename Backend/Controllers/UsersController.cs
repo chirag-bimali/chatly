@@ -70,9 +70,8 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpGet("[action]")]
-    [Authorize]
-    public async Task<IActionResult> ProfilePicture()
+    [HttpGet("[action]/{userId}")]
+    public async Task<IActionResult> ProfilePicture(string userId)
     {
         try
         {
@@ -82,7 +81,7 @@ public class UsersController : ControllerBase
                 throw new ApplicationUnauthorizedAccessException("You are not logged in");
             }
 
-            var (stream, mime) = await _userRepository.GetProfilePictureAsync(currUser);
+            var (stream, mime) = await _userRepository.GetProfilePictureAsync(userId);
 
             return File(stream, mime);
         }
@@ -205,7 +204,7 @@ public class UsersController : ControllerBase
         catch (Exception e)
         {
             return this.InternalServerError(ApiResponse<object>.ErrorResponse("Something went wrong in server",
-                StatusCodes.Status500InternalServerError, "SERVER_ERROR", "Something went wrong while deleting users"));
+                StatusCodes.Status500InternalServerError, "SERVER_ERROR", e.Message));
         }
     }
 }

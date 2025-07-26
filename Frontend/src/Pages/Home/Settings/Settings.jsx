@@ -1,12 +1,11 @@
-// import DefaultUserProfile from "assets/default-user-profile.svg?react";
-
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import DefaultUserProfile from "../../../assets/default-user-profile.svg?react";
 import AuthContext from "../../../Context/AuthContext";
 import AppContext from "../../../Context/AppContext";
 import APIContext from "../../../Context/APIContext";
 import { toast } from "react-hot-toast";
-import AppProvider from "../../../Providers/AppProvider";
+import ProfileImage from "../../../Components/ProfilePicture";
+import { useNavigate } from "react-router-dom";
 
 function InputField({
   legend,
@@ -38,10 +37,17 @@ function InputField({
   );
 }
 export default function Settings() {
-  const { saveUser } = useContext(AuthContext);
-  const { changeName, changeProfilePic, changeEmail, changePassword } =
-    useContext(APIContext);
-  const { token, currUser, setCurrUser } = useContext(AppContext);
+  const navigate = useNavigate();
+  const { saveUser, saveToken } = useContext(AuthContext);
+  const {
+    changeName,
+    changeProfilePic,
+    changeEmail,
+    changePassword,
+    deleteAccount,
+    API_ROUTE,
+  } = useContext(APIContext);
+  const { token, currUser, setCurrUser, setToken } = useContext(AppContext);
 
   const [newUserName, setNewUserName] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
@@ -52,8 +58,6 @@ export default function Settings() {
   const [password, setPassword] = useState("");
 
   const [newUserNameError, setNewUserNameError] = useState("");
-  console.log("Current User:", currUser);
-  console.log("Current Token:", token);
 
   const handleEditProfile = async (e) => {
     try {
@@ -218,8 +222,12 @@ export default function Settings() {
                 </div>
 
                 <div className="flex gap-12 items-center">
-                  <div className="w-fit">
-                    <DefaultUserProfile className="h-12 w-12" />
+                  <div className="border-4 border-base-300 rounded-full h-15 w-15 flex items-center justify-center">
+                    <ProfileImage
+                      className="h-15 w-15 rounded-full"
+                      userId={currUser?.id}
+                      uploadedImage={newProfilePic}
+                    />
                   </div>
 
                   <label
@@ -304,13 +312,46 @@ export default function Settings() {
               <p>Change Theme</p>
             </div>
             <div className="flex gap-6">
-              <button className="btn btn-outline rounded-xl mt-8">
+              <button
+                data-theme="system"
+                className="btn btn-outline rounded-xl mt-8"
+                onClick={async () => {
+                  await changeName({
+                    themeName: "system",
+                    token: token,
+                  });
+                  setCurrUser((prev) => ({ ...prev, theme: "system" }));
+                  toast.success("Theme changed to System");
+                }}
+              >
                 System
               </button>
-              <button className="btn btn-outline rounded-xl mt-8">
+              <button
+                data-theme="light"
+                className="btn btn-outline rounded-xl mt-8"
+                onClick={async () => {
+                  await changeName({
+                    themeName: "light",
+                    token: token,
+                  });
+                  setCurrUser((prev) => ({ ...prev, theme: "light" }));
+                  toast.success("Theme changed to Light");
+                }}
+              >
                 Light Theme
               </button>
-              <button className="btn btn-outline rounded-xl dark:text-base-300 mt-8">
+              <button
+                data-theme="dark"
+                onClick={async () => {
+                  await changeName({
+                    themeName: "dark",
+                    token: token,
+                  });
+                  setCurrUser((prev) => ({ ...prev, theme: "dark" }));
+                  toast.success("Theme changed to Dark");
+                }}
+                className="btn btn-outline rounded-xl dark:text-base-300 mt-8"
+              >
                 Dark Theme
               </button>
             </div>
@@ -320,7 +361,32 @@ export default function Settings() {
               <p>Delete Account</p>
             </div>
             <div className="flex gap-6">
-              <button className="btn btn-error rounded-xl dark:text-base-300 mt-8">
+              <button
+                className="btn btn-error rounded-xl dark:text-base-300 mt-8"
+                onClick={async () => {
+                  // Handle account deletion logic here
+                  try {
+                    await deleteAccount({ token });
+
+                    setCurrUser(null);
+                    setToken(null);
+
+                    saveUser(null);
+                    saveToken(null);
+                    toast.success("Account deleted successfully");
+                    navigate("/login", { replace: true });
+                  } catch (e) {
+                    console.error(e);
+                    if (e?.response?.status === 401) {
+                      toast.error(
+                        "You are not authorized to delete the account"
+                      );
+                      return;
+                    }
+                    toast.error("Error deleting account");
+                  }
+                }}
+              >
                 Delete My Account
               </button>
             </div>

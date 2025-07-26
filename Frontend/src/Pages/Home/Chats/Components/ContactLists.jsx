@@ -12,32 +12,16 @@ import { useNavigate } from "react-router-dom";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 import AuthenticationError from "../../../../Exceptions/AuthenticationError";
-import ContactContextMenu from "./ContactContextMenu";
+import App from "../../../../App";
 import AppContext from "../../../../Context/AppContext";
 
-export default function ContactLists() {
+export default function ContactLists({ contacts, setContacts }) {
   const { getContacts } = useContext(APIContext);
-  const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
+  const { latestMessage } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const [currUser, setCurrUser] = useState(null);
-  const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-  });
   const { getToken, getUser } = useContext(AuthContext);
-  const [contacts, setContacts] = useState([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!globalContextMenu) {
-      setContextMenu({
-        visible: false,
-        x: 0,
-        y: 0,
-      });
-    }
-  }, [globalContextMenu]);
 
   useEffect(() => {
     (async function () {
@@ -57,7 +41,24 @@ export default function ContactLists() {
         setLoading(false);
       }
     })();
-  }, [getContacts, getToken, navigate]);
+  }, [getContacts, getToken, navigate, getUser, setContacts]);
+
+  useEffect(() => {
+    console.log("Latest message updated:", latestMessage);
+    if (latestMessage.length > 0) {
+      setContacts((prevContacts) => {
+        return prevContacts.map((contact) => {
+          if (contact.id === latestMessage[0]?.contactId) {
+            return {
+              ...contact,
+              message: latestMessage[0],
+            };
+          }
+          return contact;
+        });
+      });
+    }
+  }, [latestMessage, setContacts]);
 
   const containerRef = useRef(null);
   if (contacts?.length === 0 && !loading) return <NoContactDisplay />;
@@ -70,39 +71,31 @@ export default function ContactLists() {
 
   return (
     !loading && (
-      <div
-        className="overflow-y-auto flex-1"
-        ref={containerRef}
-        onContextMenu={(e) => {
-          if (globalContextMenu) {
-            setGlobalContextMenu(false);
-            return;
-          }
-          e.preventDefault();
-          if (e.target.closest(".contact") !== null) {
-            setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
-            setGlobalContextMenu(true);
-            e.stopPropagation();
-          }
-        }}
-      >
-        {contacts.map((data) => {
-          let contactUser;
-          if (data.contactId == currUser.id) {
-            contactUser = data.user;
-          } else contactUser = data.contactUser;
+      <div className="overflow-y-auto flex-1" ref={containerRef}>
+        {/* sort message by data.message.createdAt */}
+        {contacts
+          .sort((a, b) => {
+            return (
+              new Date(b?.message?.createdAt) - new Date(a?.message?.createdAt)
+            );
+          })
+          .map((data) => {
+            let contactUser;
+            if (data.contactId == currUser.id) {
+              contactUser = data.user;
+            } else contactUser = data.contactUser;
 
-          return (
-            <Contact
-              isActive={true}
-              key={data.id}
-              contactId={data.id}
-              contactName={contactUser.displayName}
-            />
-          );
-        })}
-
-        <ContactContextMenu contextMenu={contextMenu} />
+            return (
+              <Contact
+                isActive={true}
+                key={data.id}
+                contactId={data.id}
+                contactName={contactUser.displayName}
+                contactUser={contactUser}
+                setContacts={setContacts}
+              />
+            );
+          })}
       </div>
     )
   );

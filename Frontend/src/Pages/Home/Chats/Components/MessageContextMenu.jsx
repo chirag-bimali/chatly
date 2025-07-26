@@ -8,7 +8,7 @@ import AppProvider from "../../../../Providers/AppProvider";
 import { useContext } from "react";
 import AppContext from "../../../../Context/AppContext";
 
-export default function MessageContextMenu({ contextMenu }) {
+export default function MessageContextMenu({ contextMenu, message }) {
   const { replyIdRef, setReplyModeOn, setForwardModeOn, forwardIdRef } =
     useContext(AppContext);
 
@@ -34,7 +34,13 @@ export default function MessageContextMenu({ contextMenu }) {
       <MessageContextMenuOption
         icon={CopyIcon}
         label={"Copy"}
-        onClick={() => {}}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(message.content);
+          } catch (e) {
+            console.log(e);
+          }
+        }}
       />
       <MessageContextMenuOption
         icon={ForwardIcon}
@@ -44,11 +50,6 @@ export default function MessageContextMenu({ contextMenu }) {
           forwardIdRef.current = el.dataset.messageId;
           setForwardModeOn(true);
         }}
-      />
-      <MessageContextMenuOption
-        icon={DeleteIcon}
-        label={"Delete"}
-        onClick={() => {}}
       />
     </div>
   );

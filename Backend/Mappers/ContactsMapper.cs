@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Backend.Mappers;
 using Chatly.DTO.Accounts;
 using Chatly.DTO.Contacts;
+using Chatly.DTO.Messages;
+using Chatly.Extensions;
 using Chatly.Models;
 
 namespace Chatly.Mappers
@@ -14,6 +16,18 @@ namespace Chatly.Mappers
     {
         public static ContactDto ToContactsDtoFromContact(this Contact data)
         {
+            var msgDto = new MessageResponseDto
+            {
+                Id = data.Message?.Id,
+                ContactId = data.Message?.ContactId,
+                Content = data.Message?.Content,
+                SenderId = data.Message?.SenderId,
+                CreatedAt = data.Message?.CreatedAt,
+                ForwardMessage = data.Message?.ForwardMessage?.ToForwardMessageResponseDto(),
+                ReplyMessage = data.Message?.ReplyMessage?.ToReplyMessageResponseDto()
+            };
+
+
             return new ContactDto
             {
                 Id = data.Id,
@@ -26,6 +40,9 @@ namespace Chatly.Mappers
 
                 ActorId = data.ActorId,
                 Actor = data.Actor?.ToUserDtoFromUser(),
+
+                MessageId = data.MessageId,
+                Message = msgDto,
 
                 Status = data.Status.ToString(),
                 CreatedAt = data.CreatedAt,

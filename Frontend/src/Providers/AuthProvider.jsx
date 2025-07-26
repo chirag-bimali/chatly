@@ -8,7 +8,8 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import UserNotFound from "../Exceptions/UserNotFound";
 import { useCallback } from "react";
 
-const API_ROUTE = `http://localhost:5280/api/accounts`;
+// const API_ROUTE = `http://localhost:5280/api/accounts`;
+const API_ROUTE = `https://chatlyapi.chiragbimali.com.np/api/accounts`;
 
 function isPlainObjectStrict(obj) {
   if (typeof obj !== "object" || obj === null) return false;
@@ -47,8 +48,6 @@ function AuthProvider({ children }) {
           "PASSWORD"
         );
       }
-      console.log(credentials);
-
       let message = await axios.post(`${API_ROUTE}/login`, credentials, {
         headers: {
           "Content-Type": "application/json",
@@ -85,9 +84,6 @@ function AuthProvider({ children }) {
     }
   }
   function saveToken(token) {
-    if (!token) {
-      throw new ArgumentError("Invalid token");
-    }
     localStorage.setItem("token", token);
   }
   const getToken = useCallback(function () {
@@ -117,9 +113,14 @@ function AuthProvider({ children }) {
     }
   }
 
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  }
+
   return (
     <AuthContext.Provider
-      value={{ login, saveToken, getToken, saveUser, getUser, signup }}
+      value={{ login, saveToken, getToken, saveUser, getUser, signup, logout }}
     >
       {children}
     </AuthContext.Provider>

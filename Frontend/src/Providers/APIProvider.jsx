@@ -7,7 +7,8 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import ArgumentError from "../Exceptions/ArgumentError";
 import { useCallback } from "react";
 
-let API_ROUTE = "http://localhost:5280/api";
+// let API_ROUTE = "http://localhost:5280/api";
+let API_ROUTE = "https://chatlyapi.chiragbimali.com.np/api";
 
 export default function APIProvider({ children }) {
   async function searchUsers({
@@ -203,6 +204,96 @@ export default function APIProvider({ children }) {
   },
   []);
 
+  const changeName = useCallback(async function ({
+    userName,
+    displayName,
+    themeName,
+    token,
+  }) {
+    let route = `${API_ROUTE}/Users/UpdateMe`;
+    let response = await axios.patch(
+      route,
+      {
+        UserName: userName,
+        DisplayName: displayName,
+        Theme: themeName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+  const changeEmail = useCallback(async function ({
+    newEmail,
+    password,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changeEmail`;
+    let response = await axios.patch(
+      route,
+      {
+        NewEmail: newEmail,
+        Password: password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
+  const changeProfilePic = useCallback(async function ({ image, token }) {
+    let route = `${API_ROUTE}/Users/UpdateProfilePicture`;
+    let formData = new FormData();
+    formData.append("image", image);
+    let response = await axios.patch(route, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }, []);
+
+  const changePassword = useCallback(async function ({
+    oldPassword,
+    newPassword,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changePassword`;
+    let response = await axios.patch(
+      route,
+      {
+        OldPassword: oldPassword,
+        NewPassword: newPassword,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
+  const deleteAccount = useCallback(async function ({ token }) {
+    let route = `${API_ROUTE}/users/deleteme`;
+    let response = await axios.delete(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }, []);
+
   return (
     <APIContext.Provider
       value={{
@@ -215,6 +306,12 @@ export default function APIProvider({ children }) {
         sendMessageToMany,
         createContact,
         changeContactStatus,
+        changeName,
+        changeProfilePic,
+        changeEmail,
+        changePassword,
+        deleteAccount,
+        API_ROUTE,
       }}
     >
       {children}

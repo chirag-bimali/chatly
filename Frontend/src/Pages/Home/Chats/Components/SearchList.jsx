@@ -52,7 +52,7 @@ export default function SearchList({ search }) {
     );
 
   return (
-    <div>
+    <div className="overflow-y-auto flex-1">
       {users.length !== 0 &&
         users
           ?.filter((data) => currUser.id !== data.id)

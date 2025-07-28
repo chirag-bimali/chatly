@@ -42,7 +42,7 @@ export default function Signup() {
         Password: password,
       });
       navigate("/login", { replace: true });
-      toast.success("Signed up success fully. Please Login to continue.")
+      toast.success("Signed up successfully. Please Login to continue.")
     } catch (e) {
       if (e instanceof NetworkError) {
         setEmailMessage(e.message);

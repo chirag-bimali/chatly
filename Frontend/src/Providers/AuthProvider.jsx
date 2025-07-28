@@ -9,7 +9,7 @@ import UserNotFound from "../Exceptions/UserNotFound";
 import { useCallback } from "react";
 
 // const API_ROUTE = `http://localhost:5280/api/accounts`;
-const API_ROUTE = `https://chatlyapi.chiragbimali.com.np/api/accounts`;
+const API_ROUTE = `${import.meta.env.VITE_API_URL}/api/accounts`;
 
 function isPlainObjectStrict(obj) {
   if (typeof obj !== "object" || obj === null) return false;

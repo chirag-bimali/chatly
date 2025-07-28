@@ -35,4 +35,5 @@ public class Contact
     [ForeignKey(nameof(ActorId))] public User? Actor { get; set; }
 
     [ForeignKey(nameof(MessageId))] public Message? Message { get; set; }
+    public ICollection<Message>? Messages { get; set; }
 }

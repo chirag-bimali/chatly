@@ -13,6 +13,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+
+
         modelBuilder.Entity<Contact>()
             .HasOne(c => c.User)
             .WithMany()
@@ -24,6 +27,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(c => c.ContactId)
             .OnDelete(DeleteBehavior.Restrict); // auto-dele
+
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Contact)
+            .WithMany(c => c.Messages)
+            .HasForeignKey(m => m.ContactId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
 
         modelBuilder.Entity<Contact>()
             .Property(c => c.Status)

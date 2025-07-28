@@ -1,6 +1,7 @@
-namespace Chatly.Helper;
 
-public static class Helper
+namespace Chatly.Helpers;
+
+public static class Helpers
 {
     public static string? GetMimeType(string filePath)
     {

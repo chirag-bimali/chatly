@@ -5,8 +5,9 @@ namespace Chatly.Models;
 
 public class User : IdentityUser
 {
-    public string? DisplayName { get; set; } 
+    public string? DisplayName { get; set; }
     public string? Theme { get; set; } = "system";
     public DateTime? LastSeen { get; set; } = DateTime.Now;
     public bool IsOnline { get; set; } = false;
+    public ICollection<Contact>? Contacts { get; set; }
 }

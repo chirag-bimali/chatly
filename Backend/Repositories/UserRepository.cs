@@ -63,7 +63,7 @@ public class UserRepository : IUserRepository
         }
 
         var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
-        return (stream, Helper.Helper.GetMimeType(file) ?? "application/octet-stream");
+        return (stream, Helpers.Helpers.GetMimeType(file) ?? "application/octet-stream");
     }
 
     public async Task UpdateProfilePictureAsync(IFormFile? image, string? userId)
@@ -168,39 +168,13 @@ public class UserRepository : IUserRepository
                 $"User with user id : {userId} could not be found");
         }
 
-        
-        //  1. Delete Every Forward Message
-        await _context.ForwardMessages.Where(m =>
-            m.Message != null &&
-            m.Message.Contact != null &&
-            (m.Message.Contact.UserId == user.Id || m.Message.Contact.ContactId == user.Id)
-        ).ExecuteDeleteAsync();
-        
-        await _context.ForwardMessages.Where(m =>
-            m.Message != null &&
-            m.PreviousContact != null &&
-            (m.PreviousContact.UserId == user.Id || m.PreviousContact.ContactId == user.Id)
-        ).ExecuteDeleteAsync();
-        
-        
-        //  2. Delete Every Reply Message
-        await _context.ReplyMessages.Where(m =>
-            m.Message != null &&
-            m.Message.Contact != null &&
-            (m.Message.Contact.UserId == user.Id || m.Message.Contact.ContactId == user.Id)
-        ).ExecuteDeleteAsync();
-        
-        //  3. Delete Ever Message
-        await _context.Messages.Where(m =>
-            m.Contact != null &&
-            (m.Contact.ContactId == user.Id || m.Contact.UserId == user.Id)
-        ).ExecuteDeleteAsync();
 
-        //  4. Delete Every Contact
+        //  1. Delete Every Contact
         await _context.Contacts.Where(u => u.ContactId == user.Id || u.UserId == user.Id)
             .ExecuteDeleteAsync();
+        // Every messages are deleted via relationships
         
-        //  5. Delete User
+        //  2. Delete User
         await _userManager.DeleteAsync(user);
         return true;
     }

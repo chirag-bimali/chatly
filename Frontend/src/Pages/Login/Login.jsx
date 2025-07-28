@@ -4,6 +4,7 @@ import AuthContext from "../../Context/AuthContext";
 import NetworkError from "../../Exceptions/NetworkError";
 import { useContext, useState } from "react";
 import BadRequest from "../../Exceptions/BadRequest";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { login, saveToken, saveUser } = useContext(AuthContext);
@@ -26,9 +27,9 @@ export default function Login() {
       setEmail("");
       setPassword("");
       saveToken(response.data.token);
-      console.log("User data:", response.data.user);
       saveUser(response.data.user);
-      window.location.href = "/";
+      navigate("/", { replace: true });
+      toast.success("Logged in!")
     } catch (e) {
       if (e instanceof NetworkError) {
         setEmailMessage(e.message);

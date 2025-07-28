@@ -8,7 +8,6 @@ using Chatly.Extensions;
 using Chatly.Interfaces.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Chatly.Helper;
 using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Controllers;

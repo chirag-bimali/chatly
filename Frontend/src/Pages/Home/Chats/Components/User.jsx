@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import DefaultUserProfile from "../../../../assets/default-user-profile.svg";
+import ProfileImage from "../../../../Components/ProfilePicture";
 export default function User({ userName, userId }) {
   const lastMessage = "Hello";
   const lastMessageTime = "10:10";
@@ -18,11 +19,13 @@ export default function User({ userName, userId }) {
       className={`contact btn border-none dark:shadow-none h-fit w-full px-1 block rounded-xl `}
     >
       <div className="flex items-start px-2 py-4 justify-between gap-3.5 prose prose-p:font-normal">
-        <img
-          src={profileImageUrl ? profileImageUrl : DefaultUserProfile}
-          alt={userName + " profile picture"}
-          className="mb-0 self-center"
-        />
+        <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+          <ProfileImage
+            userId={userId}
+            uploadedImage={profileImageUrl}
+            className={"h-full w-full rounded-full"}
+          />
+        </div>
         <div className="flex-grow">
           <div className="prose prose-p:text-base prose-p:text-neutral-950 dark:prose-p:text-neutral-50 prose-p:text-left">
             <p>{userName ? userName : "Noobie"}</p>

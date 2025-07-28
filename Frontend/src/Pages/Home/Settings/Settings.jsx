@@ -320,6 +320,7 @@ export default function Settings() {
                     themeName: "system",
                     token: token,
                   });
+                  saveUser({ ...currUser, theme: "system"});
                   setCurrUser((prev) => ({ ...prev, theme: "system" }));
                   toast.success("Theme changed to System");
                 }}
@@ -334,6 +335,7 @@ export default function Settings() {
                     themeName: "light",
                     token: token,
                   });
+                  saveUser({ ...currUser, theme: "light"});
                   setCurrUser((prev) => ({ ...prev, theme: "light" }));
                   toast.success("Theme changed to Light");
                 }}
@@ -347,6 +349,7 @@ export default function Settings() {
                     themeName: "dark",
                     token: token,
                   });
+                  saveUser({ ...currUser, theme: "dark"});
                   setCurrUser((prev) => ({ ...prev, theme: "dark" }));
                   toast.success("Theme changed to Dark");
                 }}

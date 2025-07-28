@@ -335,7 +335,7 @@ export default function Settings() {
                     themeName: "light",
                     token: token,
                   });
-                  saveUser({ ... currUser, theme: "light"});
+                  saveUser({ ...currUser, theme: "light"});
                   setCurrUser((prev) => ({ ...prev, theme: "light" }));
                   toast.success("Theme changed to Light");
                 }}

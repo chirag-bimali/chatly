@@ -320,7 +320,7 @@ export default function Settings() {
                     themeName: "system",
                     token: token,
                   });
-                  saveUser({ ... currUser, theme: "system"});
+                  saveUser({ ...currUser, theme: "system"});
                   setCurrUser((prev) => ({ ...prev, theme: "system" }));
                   toast.success("Theme changed to System");
                 }}

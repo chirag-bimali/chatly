@@ -349,7 +349,7 @@ export default function Settings() {
                     themeName: "dark",
                     token: token,
                   });
-                  saveUser({ ... currUser, theme: "dark"});
+                  saveUser({ ...currUser, theme: "dark"});
                   setCurrUser((prev) => ({ ...prev, theme: "dark" }));
                   toast.success("Theme changed to Dark");
                 }}

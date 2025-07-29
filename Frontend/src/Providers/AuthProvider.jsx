@@ -73,7 +73,6 @@ function AuthProvider({ children }) {
       });
       return message.data;
     } catch (e) {
-      console.error(e);
       if (e.code === "ERR_NETWORK") {
         throw new NetworkError(e.message, e);
       }

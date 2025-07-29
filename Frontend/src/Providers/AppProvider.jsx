@@ -7,8 +7,6 @@ import AuthContext from "../Context/AuthContext";
 import AuthenticationError from "../Exceptions/AuthenticationError";
 import { useNavigate } from "react-router-dom";
 
-// let HUB_ROUTE = "http://localhost:5280/hubs";
-// let HUB_ROUTE = "https://chatlyapi.chiragbimali.com.np/hubs";
 let HUB_ROUTE = `${import.meta.env.VITE_API_URL}/hubs`;
 
 export default function AppProvider({ children }) {
@@ -42,10 +40,6 @@ export default function AppProvider({ children }) {
   // Image loading useEffect
   useEffect(() => {
     const loadImage = async (imageId) => {
-      console.log(`Loading image for user ${imageId}:`);
-      console.log("Token:", token);
-      console.log("Image Cache:", imageCache);
-      console.log("Requested Images:", requestedImages);
       if (!token || imageCache[imageId] || loadingImages.has(imageId)) {
         return;
       }
@@ -180,7 +174,6 @@ export default function AppProvider({ children }) {
       connectionRef.current = connection;
 
       connection.on("ReceiveMessage", (messageResponse) => {
-        console.log("Received message:", messageResponse);
         setLatestMessage([messageResponse.data]);
       });
 
@@ -197,7 +190,6 @@ export default function AppProvider({ children }) {
         }
       };
     } catch (e) {
-      console.error("Error setting up SignalR connection:", e);
       toast.error("Failed to connect to the server. Please try again later.");
     }
   }, [token]);

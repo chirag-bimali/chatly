@@ -7,7 +7,6 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import ArgumentError from "../Exceptions/ArgumentError";
 import { useCallback } from "react";
 
-// let API_ROUTE = "http://localhost:5280/api";
 let API_ROUTE = `${import.meta.env.VITE_API_URL}/api`;
 
 export default function APIProvider({ children }) {
@@ -31,7 +30,6 @@ export default function APIProvider({ children }) {
       });
       return response.data;
     } catch (e) {
-      console.log(e);
       if (e.code === "ERR_NETWORK") throw new NetworkError(e.message, { e });
       if (e.status === 401)
         throw new AuthenticationError("User not Authenticated");
@@ -60,23 +58,18 @@ export default function APIProvider({ children }) {
     pageSize = 10,
     token = "",
   }) {
-    try {
-      const route = `${API_ROUTE}/contacts/all`;
-      const response = await axios.get(route, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          Query: query,
-          Page: page,
-          PageSize: pageSize,
-        },
-      });
-      return response?.data;
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
+    const route = `${API_ROUTE}/contacts/all`;
+    const response = await axios.get(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        Query: query,
+        Page: page,
+        PageSize: pageSize,
+      },
+    });
+    return response?.data;
   },
   []);
   const createContact = useCallback(async function ({ contactUserId, token }) {

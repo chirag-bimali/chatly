@@ -8,7 +8,8 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import { useNavigate } from "react-router-dom";
 
 // let HUB_ROUTE = "http://localhost:5280/hubs";
-let HUB_ROUTE = "https://chatlyapi.chiragbimali.com.np/hubs";
+// let HUB_ROUTE = "https://chatlyapi.chiragbimali.com.np/hubs";
+let HUB_ROUTE = `${import.meta.env.VITE_API_URL}/hubs`;
 
 export default function AppProvider({ children }) {
   const [globalContextMenu, setGlobalContextMenu] = useState(false);
@@ -53,7 +54,7 @@ export default function AppProvider({ children }) {
 
       try {
         const response = await fetch(
-          `https://chatlyapi.chiragbimali.com.np/api/users/profilepicture/${imageId}`,
+          `${import.meta.env.VITE_API_URL}/api/users/profilepicture/${imageId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

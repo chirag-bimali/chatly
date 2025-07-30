@@ -13,12 +13,12 @@ export default function MessageContextMenu({ contextMenu, message }) {
     useContext(AppContext);
   const elRef = useRef(null);
 
-  const [width, setWindth] = useState(0);
+  const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
     if (elRef.current) {
-      setWindth(elRef.current.offsetWidth);
+      setWidth(elRef.current.offsetWidth);
       setHeight(elRef.current.offsetHeight);
     }
   }, [contextMenu]);
@@ -38,7 +38,6 @@ export default function MessageContextMenu({ contextMenu, message }) {
     posY = posY - height;
   }
 
-  if (!contextMenu.visible) return null;
 
   return (
     <div

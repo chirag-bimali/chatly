@@ -68,7 +68,9 @@ export default function ProfileImage({
 
   if (!imageUrl) {
     return (
-      <DefaultUserProfile className={`border-4 border-base-300 ${className}`} />
+      <DefaultUserProfile
+        className={`h-full w-full object-cover border-4 border-base-300 ${className}`}
+      />
     );
   }
 

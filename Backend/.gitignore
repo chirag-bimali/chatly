@@ -42,7 +42,7 @@ packages/
 *.vssscc
 
 # Entity Framework Migrations history
-Migrations/
+# Migrations/
 
 # Visual Studio Code
 .vscode/

@@ -6,6 +6,10 @@ import svgr from "vite-plugin-svgr";
 export default defineConfig({
   plugins: [tailwindcss(), react(), svgr()],
   server: {
-    allowedHosts: ["chatlyapp.chiragbimali.com.np"],
+    host: "0.0.0.0",
+    port: parseInt(process.env.VITE_PORT || "3000", 10),
+    watch: {
+      usePolling: true,
+    },
   },
 });

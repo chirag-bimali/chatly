@@ -40,11 +40,11 @@ export default function Chat({ imgSrc, message }) {
           />
         </div>
       </div>
-      <div className="chat-header text-neutral-400">
+      <div className="chat-header text-base-content">
         {message.senderId === currUser.id ? "" : ""}
       </div>
       <div
-        className="chat-bubble bg-slate-300 text-base-content px-3"
+        className="chat-bubble bg-base-200 text-base-content px-3"
         onContextMenu={(e) => {
           if (globalContextMenu) {
             setGlobalContextMenu(false);
@@ -62,16 +62,16 @@ export default function Chat({ imgSrc, message }) {
           {/* Reply Message Area */}
           {message?.replyMessage?.id && (
             <div
-              className={`px-2 py-2 bg-slate-400 flex flex-col mb-1 ${
+              className={`px-2 py-2 bg-base-200 flex flex-col mb-1 border-base-300 ${
                 message.senderId === currUser.id
                   ? "rounded-r-sm border-l-4"
                   : " rounded-l-sm border-r-4"
               }`}
             >
-              <p className="text-xs text-slate-300 font-medium">
+              <p className="text-xs text-base-content opacity-40 font-medium">
                 {message?.replyMessage?.previousSender?.displayName}
               </p>
-              <p className="text-xs text-slate-800">
+              <p className="text-xs text-base-content opacity-40">
                 {message?.replyMessage?.previousContent}
               </p>
             </div>
@@ -79,13 +79,13 @@ export default function Chat({ imgSrc, message }) {
 
           {/* If message is forwarded */}
           {message?.forwardMessage?.id && (
-            <p className="text-xs text-slate-500 font-medium mb-1">
+            <p className="text-xs text-base-content font-medium mb-1">
               ⏩ Forwarded
             </p>
           )}
 
           {/* message content */}
-          <p className="text-sm text-slate-600 mb-2">{message?.content}</p>
+          <p className="text-sm text-base-content mb-2">{message?.content}</p>
 
           {/* forward sub content */}
           {message?.forwardMessage?.id &&

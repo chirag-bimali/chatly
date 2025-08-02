@@ -26,7 +26,7 @@ public class MessageResponseDto
     public string? Content { get; set; }
     public ContactDto? Contact { get; set; }
     public string? SenderId { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
     public ForwardMessageResponseDto? ForwardMessage { get; set; }
     public ReplyMessageResponseDto? ReplyMessage { get; set; }
 }

@@ -17,10 +17,11 @@ export default function ChatsWindowBody({
 
   const { getMessages } = useContext(APIContext);
   const { getToken } = useContext(AuthContext);
+  const { latestMessage } = useContext(AppContext);
   const [skip, setSkip] = useState(0);
   const [pageSize, _] = useState(10);
   const [totalMessages, setTotalMessages] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const prevScrollTopRef = useRef(0);
   const prevScrollHeightRef = useRef(0);
 
@@ -28,7 +29,7 @@ export default function ChatsWindowBody({
     if (contactDetails) {
       setMessages([]);
       setSkip(0);
-      setLoading(true);
+      setInitialLoading(true);
     }
   }, [contactDetails, setMessages]);
 
@@ -48,14 +49,14 @@ export default function ChatsWindowBody({
           setMessages(response.data?.reverse());
           messageUpdateReason.current = "initial";
         } else {
-          setTimeout(() => {
-            setMessages((prev) => {
-              const data = response.data.reverse();
-              return [...data, ...prev];
-            });
-          }, 100);
+          // setTimeout(() => {
+          setMessages((prev) => {
+            const data = response.data.reverse();
+            return [...data, ...prev];
+          });
+          // }, 100);
         }
-        setLoading(false);
+        setInitialLoading(false);
       } catch (e) {
         console.log(e);
       }
@@ -71,9 +72,33 @@ export default function ChatsWindowBody({
   ]);
 
   useEffect(() => {
+    if (latestMessage?.length) {
+      setMessages((prev) => {
+        const currentContactMessages = latestMessage?.filter(
+          (lm) => lm.contactId === contactDetails?.id
+        );
+        const AmIReceiver = currentContactMessages?.filter((m) => {
+          return m?.senderId === contactUserDetails.id;
+        });
+        if (latestMessage?.length) {
+          return [...prev, ...AmIReceiver];
+        }
+        return prev;
+      });
+      messageUpdateReason.current = "new";
+    }
+  }, [
+    latestMessage,
+    setMessages,
+    messageUpdateReason,
+    contactDetails.id,
+    contactUserDetails,
+  ]);
+
+  useEffect(() => {
     const el = chatContainerRef.current;
 
-    if (el && !loading) {
+    if (el) {
       if (messageUpdateReason.current === "initial") {
         setTimeout(() => {
           requestAnimationFrame(() => {
@@ -94,17 +119,16 @@ export default function ChatsWindowBody({
         }, 0);
       }
     }
-  }, [messageUpdateReason, messages, loading]);
+  }, [messageUpdateReason, messages, initialLoading]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     const handleScroll = async () => {
       if (
         chatContainer.scrollTop === 0 &&
-        !loading &&
+        !initialLoading &&
         messages.length < totalMessages
       ) {
-        setLoading(true);
         setSkip((prev) => prev + pageSize);
         prevScrollTopRef.current = chatContainer.scrollTop;
         prevScrollHeightRef.current = chatContainer.scrollHeight;
@@ -120,11 +144,16 @@ export default function ChatsWindowBody({
         chatContainer.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [loading, messages, totalMessages, pageSize, messageUpdateReason]);
+  }, [initialLoading, messages, totalMessages, pageSize, messageUpdateReason]);
 
   return (
     <div className="flex-1 overflow-y-auto" ref={chatContainerRef}>
-      {!loading &&
+      {initialLoading && (
+        <div className="flex-1 flex items-center justify-center h-full">
+          <span className="loading loading-bars loading-xl"></span>
+        </div>
+      )}
+      {!initialLoading &&
         messages.map((e) => {
           return (
             <Chat

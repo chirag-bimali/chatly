@@ -3,6 +3,7 @@ import AppContext from "../../../../Context/AppContext";
 import MessageContextMenu from "./MessageContextMenu";
 import AuthContext from "../../../../Context/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import ProfileImage from "../../../../Components/ProfilePicture";
 
 export default function Chat({ imgSrc, message }) {
   const [contextMenu, setContextMenu] = useState({
@@ -10,7 +11,7 @@ export default function Chat({ imgSrc, message }) {
     x: 0,
     y: 0,
   });
-  const { getUser } = useContext(AuthContext);
+  const { currUser } = useContext(AppContext);
   const { globalContextMenu, setGlobalContextMenu } = useContext(AppContext);
   useEffect(() => {
     if (!globalContextMenu) {
@@ -21,7 +22,6 @@ export default function Chat({ imgSrc, message }) {
       });
     }
   }, [globalContextMenu]);
-  const currUser = getUser();
 
   return (
     <div
@@ -31,14 +31,12 @@ export default function Chat({ imgSrc, message }) {
       data-message-id={message.id}
     >
       <div className="chat-image avatar">
-        <div className="w-10 rounded-full">
-          <img
-            alt="Tailwind CSS chat bubble component"
-            src={
-              imgSrc
-                ? imgSrc
-                : "https://img.daisyui.com/images/profile/demo/kenobee@192.webp"
+        <div className="w-10 h-10 flex items-center justify-center rounded-full">
+          <ProfileImage
+            userId={
+              message.senderId === currUser.id ? currUser.id : message.senderId
             }
+            className={"h-full w-full rounded-full bg-transparent"}
           />
         </div>
       </div>
@@ -78,7 +76,7 @@ export default function Chat({ imgSrc, message }) {
               </p>
             </div>
           )}
-          
+
           {/* If message is forwarded */}
           {message?.forwardMessage?.id && (
             <p className="text-xs text-slate-500 font-medium mb-1">
@@ -114,7 +112,7 @@ export default function Chat({ imgSrc, message }) {
             </p>
           </div>
         </div>
-        <MessageContextMenu contextMenu={contextMenu} />
+        <MessageContextMenu contextMenu={contextMenu} message={message} />
       </div>
     </div>
   );

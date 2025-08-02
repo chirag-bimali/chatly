@@ -3,6 +3,7 @@ using Chatly.Exceptions;
 using Chatly.Interfaces.Repositories;
 using Chatly.Models;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
@@ -32,11 +33,16 @@ public class MessageRepository : IMessageRepository
         if (content == null)
             throw new ApplicationArgumentException("Content cannot be null", nameof(content));
 
-        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == contactId);
-        if (contact == null) throw new NotFoundException("Contact not found");
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == contactId) ??
+                      throw new NotFoundException("Contact not found");
 
-        var sender = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == senderId);
-        if (sender == null) throw new NotFoundException("Sender not found");
+        if (contact.Status == ContactStatus.Blocked)
+        {
+            throw new ConflictException("You are blocked");
+        }
+
+        var sender = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == senderId) ??
+                     throw new NotFoundException("Sender not found");
 
         if (!(contact.ContactId == senderId || contact.UserId == senderId))
         {
@@ -55,7 +61,13 @@ public class MessageRepository : IMessageRepository
         }
 
         var messageToBeForwarded =
-            await _dbContext.Messages.Include(f => f.Sender).FirstOrDefaultAsync(x => x.Id == forwardMessageId);
+            await _dbContext.Messages
+                .Include(f => f.Sender)
+                .Include(f => f.Contact)
+                .ThenInclude(c => c != null ? c.User : null)
+                .Include(f => f.Contact)
+                .ThenInclude(c => c != null ? c.ContactUser : null)
+                .FirstOrDefaultAsync(x => x.Id == forwardMessageId);
 
         if (messageToBeForwarded != null &&
             messageToBeForwarded.ContactId == contact.Id
@@ -121,7 +133,11 @@ public class MessageRepository : IMessageRepository
         }
 
 
+        contact.MessageId = newMessage.Id;
+        contact.Message = newMessage;
+
         await _dbContext.Messages.AddAsync(newMessage);
+        _dbContext.Contacts.Update(contact);
         await _dbContext.SaveChangesAsync();
         newMessage.ForwardMessage = newforwardMessage;
         newMessage.ReplyMessage = newReplyMessage;
@@ -145,16 +161,21 @@ public class MessageRepository : IMessageRepository
             throw new ApplicationArgumentException("One of the field must be null", nameof(replyMessageId)).AddParam(
                 nameof(forwardMessageId));
 
+
+
         var forwardMessage = forwardMessageId != null
             ? await _dbContext.Messages
                 .Include(m => m.Contact)
+                .ThenInclude(c => c != null ? c.User : null)
+                .Include(m => m.Contact)
+                .ThenInclude(c => c != null ? c.ContactUser : null)
                 .Include(m => m.Sender)
                 .Where(m => m.Contact != null && (m.Contact.UserId == senderId || m.Contact.ContactId == senderId))
                 .FirstOrDefaultAsync(m => m.Id == forwardMessageId)
             : null;
         if (!string.IsNullOrEmpty(forwardMessageId) && forwardMessage == null)
         {
-            throw new NotFoundException("Message to be forwarded not found");
+            throw new NotFoundException("Message to be forwarded  not found");
         }
 
         var replyMessage = replyMessageId != null
@@ -167,7 +188,7 @@ public class MessageRepository : IMessageRepository
 
         if ((!string.IsNullOrEmpty(replyMessageId)) && replyMessage == null)
         {
-            throw new NotFoundException("Message to be forwarded not found");
+            throw new NotFoundException("Message to be reply not found");
         }
 
 
@@ -187,10 +208,12 @@ public class MessageRepository : IMessageRepository
         var messages = contacts.Select<Contact, Message>(c =>
         {
             var messageId = Guid.NewGuid().ToString();
-            return new Message
+
+            var newMsg = new Message
             {
                 Id = messageId,
                 ContactId = c.Id,
+                Contact = c,
                 Content = forwardMessage == null ? content : forwardMessage.Content,
                 CreatedAt = DateTime.Now,
                 SenderId = senderId,
@@ -220,6 +243,11 @@ public class MessageRepository : IMessageRepository
                         PreviousSender = replyMessage?.Sender
                     }
             };
+            newMsg.Contact.MessageId = messageId;
+            newMsg.Contact.Message = newMsg;
+
+
+            return newMsg;
         }).ToList();
 
         var addMessages = _dbContext.Messages.AddRangeAsync(messages);
@@ -244,7 +272,16 @@ public class MessageRepository : IMessageRepository
         if (addForwardMessages != null) await addForwardMessages;
         if (addReplyMessages != null) await addReplyMessages;
 
+
         var saved = await _dbContext.SaveChangesAsync();
+        foreach (var m in messages)
+        {
+            await _dbContext.Contacts
+                .Where(c => c.Id == m.ContactId)
+                .ExecuteUpdateAsync(setter =>
+                    setter.SetProperty(c => c.MessageId, c => m.Id)
+                );
+        }
 
 
         return messages;
@@ -275,6 +312,12 @@ public class MessageRepository : IMessageRepository
         var queryable = _dbContext.Messages
             .Include(x => x.ForwardMessage)
             .ThenInclude(f => f != null ? f.PreviousSender : null)
+            .Include(x => x.ForwardMessage)
+            .ThenInclude(f => f != null ? f.PreviousContact : null)
+            .ThenInclude(c => c != null ? c.User : null)
+            .Include(x => x.ForwardMessage)
+            .ThenInclude(f => f != null ? f.PreviousContact : null)
+            .ThenInclude(c => c != null ? c.ContactUser : null)
             .Include(x => x.ReplyMessage)
             .ThenInclude(r => r != null ? r.PreviousSender : null)
             .OrderByDescending(c => c.CreatedAt)

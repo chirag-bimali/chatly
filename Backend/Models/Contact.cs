@@ -27,8 +27,13 @@ public class Contact
 
     public string? ActorId { get; set; }
 
+    public string? MessageId { get; set; }
+
 
     [ForeignKey(nameof(UserId))] public User? User { get; set; }
     [ForeignKey(nameof(ContactId))] public User? ContactUser { get; set; }
     [ForeignKey(nameof(ActorId))] public User? Actor { get; set; }
+
+    [ForeignKey(nameof(MessageId))] public Message? Message { get; set; }
+    public ICollection<Message>? Messages { get; set; }
 }

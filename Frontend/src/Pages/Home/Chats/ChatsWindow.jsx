@@ -11,15 +11,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import ForwardMessageUserList from "./Components/ForwardMessageUserList";
 import AppContext from "../../../Context/AppContext";
 
-export default function ChatsWindow() {
+export default function ChatsWindow({ contacts, setContacts }) {
   const { chatId, userId } = useParams();
   const { getToken, getUser } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState([]);
   const [draftMode, setDraftMode] = useState(true);
-
-  const currUser = getUser();
+  const [currUser, setCurrUser] = useState(null);
 
   const { getContact, getUserById, createContact, changeContactStatus } =
     useContext(APIContext);
@@ -28,6 +27,17 @@ export default function ChatsWindow() {
   const [contactUserDetails, setContactUserDetails] = useState({});
   const messageUpdateReason = useRef("initial");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    try {
+      const user = getUser();
+      setCurrUser(user);
+    } catch (error) {
+      console.error("Failed to get user:", error);
+      setCurrUser(null);
+      navigate("/login");
+    }
+  }, [getUser, navigate]);
 
   useEffect(() => {
     if (!userId) {
@@ -181,6 +191,7 @@ export default function ChatsWindow() {
           chatDetails={chatDetails}
           draftMode={draftMode}
           contactUserDetails={contactUserDetails}
+          setChatDetails={setChatDetails}
         />
         <div className="flex flex-1 flex-col overflow-hidden relative">
           <ChatsWindowBody
@@ -279,6 +290,9 @@ export default function ChatsWindow() {
             messages={messages}
             setMessages={setMessages}
             chatDetails={chatDetails}
+            contacts={contacts}
+            setContacts={setContacts}
+            setChatDetails={setChatDetails}
             messageUpdateReason={messageUpdateReason}
           />
         </div>

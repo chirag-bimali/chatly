@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Chatly.Models;
 
 public class Message
@@ -15,6 +17,8 @@ public class Message
     public bool IsReply { get; set; }
 
     public User? Sender { get; set; }
+    
+    [ForeignKey(nameof(ContactId))]
     public Contact? Contact { get; set; }
     public ReplyMessage? ReplyMessage { get; set; }
     public ForwardMessage? ForwardMessage { get; set; }

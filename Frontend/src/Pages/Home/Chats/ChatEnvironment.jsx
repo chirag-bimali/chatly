@@ -14,6 +14,7 @@ export default function ChatEnvironment() {
   const [searchMode, setSearchMode] = useState(false);
   const [search, setSearch] = useState("");
 
+  const [contacts, setContacts] = useState([]);
 
   async function handleSearch(e) {
     if (!e.target.value) {
@@ -36,7 +37,9 @@ export default function ChatEnvironment() {
             onChange={(e) => handleSearch(e)}
           />
         </label>
-        {!searchMode && <ContactLists />}
+        {!searchMode && (
+          <ContactLists contacts={contacts} setContacts={setContacts} />
+        )}
         {searchMode && (
           // <div className="flex-1 max-h-[512px]">
           <SearchList search={search} />
@@ -44,7 +47,7 @@ export default function ChatEnvironment() {
         )}
       </div>
       <div className="flex flex-col px-6 flex-1">
-        <ChatWindow />
+        <ChatWindow contacts={contacts} setContacts={setContacts} />
       </div>
     </div>
   );

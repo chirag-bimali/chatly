@@ -1,11 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppContext from "../../../../Context/AppContext";
 import APIContext from "../../../../Context/APIContext";
 import AuthContext from "../../../../Context/AuthContext";
 import CloseIcon from "../../../../assets/close-icon.svg?react";
+import toast from "react-hot-toast";
 
 export default function MessageInputField({
   chatDetails,
+  setChatDetails,
+  contacts,
+  setContacts,
   messages,
   setMessages,
   contactUserDetails,
@@ -25,6 +29,7 @@ export default function MessageInputField({
 
   const { sendMessage, sendMessageToMany } = useContext(APIContext);
   const { getToken, getUser } = useContext(AuthContext);
+  const { setLatestMessage } = useContext(AppContext);
 
   const [chatContent, setChatContent] = useState("");
   const contactId = chatDetails.id;
@@ -42,23 +47,19 @@ export default function MessageInputField({
     e.preventDefault();
     try {
       if (forwardModeOn && forwardContacts.length === 0) {
-        alert("Please select at least one contact to forward the message.");
         return;
       }
       if (replyModeOn && !replyIdRef.current) {
-        alert("Please select a message to reply to.");
         return;
       }
       if (forwardModeOn) {
         // Send Forward message
-        const response = await sendMessageToMany({
+        let response = await sendMessageToMany({
           contactIds: forwardContacts,
           forwardMessageId: forwardIdRef.current,
           content: chatContent,
           token: getToken(),
         });
-        console.log("Messages sent successfully:", response?.data);
-
         // Clear Input Field
         setChatContent("");
 
@@ -67,6 +68,8 @@ export default function MessageInputField({
 
         // Reset Forward Contacts
         setForwardContacts([]);
+
+        toast.success("Message forwarded successfully");
 
         return;
       }
@@ -79,12 +82,36 @@ export default function MessageInputField({
         content: chatContent,
         token: getToken(),
       });
+      setLatestMessage([response.data]);
       setMessages((prev) => [...prev, response.data]);
       setChatContent("");
       if (replyModeOn) setReplyModeOn(false);
       messageUpdateReason.current = "new";
+      console.log("Message sent successfully:", response.data);
+      setContacts((prevContacts) =>
+        prevContacts.map((contact) => {
+          if (contact.id === chatDetails.id) {
+            return {
+              ...contact,
+              message: {
+                id: response.data.id,
+                content: response.data.content,
+                createdAt: response.data.createdAt,
+              },
+            };
+          }
+          return contact;
+        })
+      );
     } catch (e) {
       console.error(e);
+      setChatContent("");
+      if (replyModeOn) setReplyModeOn(false);
+      if (forwardModeOn) {
+        setForwardModeOn(false);
+        setForwardContacts([]);
+      }
+      toast.error(e?.response?.data?.message || "Failed to send message");
     }
   }
 

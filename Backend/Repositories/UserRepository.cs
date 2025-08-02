@@ -1,11 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Chatly.Data;
 using Chatly.DTO;
 using Chatly.DTO.Accounts;
 using Chatly.Exceptions;
 using Chatly.Interfaces.Repositories;
 using Chatly.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Repositories;
@@ -57,7 +63,7 @@ public class UserRepository : IUserRepository
         }
 
         var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
-        return (stream, Helper.Helper.GetMimeType(file) ?? "application/octet-stream");
+        return (stream, Helpers.Helpers.GetMimeType(file) ?? "application/octet-stream");
     }
 
     public async Task UpdateProfilePictureAsync(IFormFile? image, string? userId)
@@ -65,7 +71,7 @@ public class UserRepository : IUserRepository
         if (image == null) throw new ApplicationArgumentException("Image is null", nameof(image));
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         var extension = Path.GetExtension(image.FileName);
-        if (!allowedExtensions.Contains(extension))
+        if (!allowedExtensions.Contains(extension.ToLower()))
         {
             throw new ApplicationArgumentException(
                 $"Only ->  {string.Join(", ", allowedExtensions)} are allowed", nameof(image));
@@ -82,6 +88,17 @@ public class UserRepository : IUserRepository
         if (!Directory.Exists(profilePictureDirectory))
         {
             throw new ApplicationException("Profile picture path does not exist");
+        }
+
+        // Check if user already has a profile picture with any extension
+        var existingFile = Directory
+            .GetFiles(profilePictureDirectory)
+            .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == user.Id);
+
+        // Delete existing profile picture if found
+        if (!string.IsNullOrEmpty(existingFile))
+        {
+            File.Delete(existingFile);
         }
 
         var imagePath = Path.Combine(profilePictureDirectory, user.Id) + extension;
@@ -151,9 +168,13 @@ public class UserRepository : IUserRepository
                 $"User with user id : {userId} could not be found");
         }
 
+
+        //  1. Delete Every Contact
         await _context.Contacts.Where(u => u.ContactId == user.Id || u.UserId == user.Id)
             .ExecuteDeleteAsync();
-        // await _context.Messages.Where(m => m.SenderId == user.Id || m.ReceiverId == user.Id).ExecuteDeleteAsync();
+        // Every messages are deleted via relationships
+        
+        //  2. Delete User
         await _userManager.DeleteAsync(user);
         return true;
     }

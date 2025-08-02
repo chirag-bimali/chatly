@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../../Context/AuthContext";
 import NetworkError from "../../Exceptions/NetworkError";
 import BadRequest from "../../Exceptions/BadRequest";
+import toast from "react-hot-toast";
 
 export default function Signup() {
   const { signup } = useContext(AuthContext);
@@ -40,7 +41,8 @@ export default function Signup() {
         Username: username,
         Password: password,
       });
-      navigate("/login");
+      navigate("/login", { replace: true });
+      toast.success("Signed up successfully. Please Login to continue.")
     } catch (e) {
       if (e instanceof NetworkError) {
         setEmailMessage(e.message);
@@ -57,7 +59,6 @@ export default function Signup() {
           setDisplayNameMessage(e.message);
           return;
         }
-        console.log(Array.isArray(errors.DisplayName));
 
         "DisplayName" in errors && Array.isArray(errors.DisplayName)
           ? setDisplayNameMessage(errors.DisplayName[0])
@@ -74,13 +75,11 @@ export default function Signup() {
 
         return;
       }
-      console.error(e);
     }
   }
 
   return (
     <div>
-
       <div className="mt-4 prose prose-h2:text-base-content prose-h2:text-3xl prose-h2:font-semibold flex flex-col prose-h2:text-center  w-full mx-auto items-center">
         <h2>Sign up for Chatly</h2>
         <form

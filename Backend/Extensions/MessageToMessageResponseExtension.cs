@@ -1,4 +1,5 @@
 using Backend.Mappers;
+using Chatly.DTO.Contacts;
 using Chatly.DTO.Messages;
 using Chatly.Mappers;
 using Chatly.Models;
@@ -14,23 +15,40 @@ public static class MessageToMessageResponseExtension
 
     static public MessageResponseDto ToMessageResponseDto(this Message message)
     {
-        return new MessageResponseDto
+        var msgDto = new MessageResponseDto
         {
-            // public string? Id { get; set; }
-            // public string? ContactId { get; set; }
-            // public string? Content { get; set; }
-            // public string? SenderId { get; set; }
-            // public ForwardMessageResponseDto? ForwardMessage { get; set; }
-            // public ReplyMessageResponseDto? ReplyMessage { get; set; }
             Id = message.Id,
             ContactId = message.ContactId,
-            Contact = message.Contact?.ToContactsDtoFromContact(),
             Content = message.Content,
             SenderId = message.SenderId,
             CreatedAt = message.CreatedAt,
             ForwardMessage = message.ForwardMessage?.ToForwardMessageResponseDto(),
             ReplyMessage = message.ReplyMessage?.ToReplyMessageResponseDto()
         };
+        var newContact = new ContactDto
+        {
+            Id = message.Contact?.Id,
+
+            UserId = message.Contact?.UserId,
+            User = message.Contact?.User?.ToUserDtoFromUser(),
+
+            ContactId = message.Contact?.ContactId,
+            ContactUser = message.Contact?.ContactUser?.ToUserDtoFromUser(),
+
+            ActorId = message.Contact?.ActorId,
+            Actor = message.Contact?.Actor?.ToUserDtoFromUser(),
+
+            MessageId = message.Contact?.MessageId,
+            // Message = msgDto,
+
+            Status = message.Contact?.Status.ToString(),
+            CreatedAt = message.Contact?.CreatedAt,
+            Mutated = message.Contact?.Mutated ?? false,
+            Archived = message.Contact?.Archived ?? false,
+            UnreadCount = message.Contact?.UnreadCount ?? 0
+        };
+        msgDto.Contact = newContact;
+        return msgDto;
     }
 
     static public ForwardMessageResponseDto ToForwardMessageResponseDto(this ForwardMessage message)

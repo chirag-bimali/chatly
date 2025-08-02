@@ -9,22 +9,46 @@ import NotFound from "./Pages/NotFound";
 import AuthProvider from "./Providers/AuthProvider";
 import AppProvider from "./Providers/AppProvider";
 import AppContext from "./Context/AppContext";
+import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
   return (
-    <AppProvider>
-      <AuthProvider>
-        <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
-          <Router>
-            <Routes>
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="*" element={<Home />} />
-            </Routes>
-          </Router>
-        </div>
-      </AuthProvider>
-    </AppProvider>
+    <AuthProvider>
+      <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
+        <Toaster position="bottom-right" />
+        <Router>
+          <Routes>
+            <Route
+              path="/signup"
+              element={
+                <AppProvider>
+                  <Signup />
+                </AppProvider>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <AppProvider>
+                  <Login />
+                </AppProvider>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <ProtectedRoute>
+                  <AppProvider>
+                    <Home />
+                  </AppProvider>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </div>
+    </AuthProvider>
   );
 }
 

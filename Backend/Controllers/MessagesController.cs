@@ -8,7 +8,6 @@ using Chatly.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationException = Chatly.Exceptions.ApplicationException;
-using Chatly.DTO.Messages;
 using Chatly.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Identity.Client;

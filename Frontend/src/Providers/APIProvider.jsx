@@ -7,7 +7,7 @@ import AuthenticationError from "../Exceptions/AuthenticationError";
 import ArgumentError from "../Exceptions/ArgumentError";
 import { useCallback } from "react";
 
-let API_ROUTE = "http://localhost:5280/api";
+let API_ROUTE = `${import.meta.env.VITE_API_URL}/api`;
 
 export default function APIProvider({ children }) {
   async function searchUsers({
@@ -30,7 +30,6 @@ export default function APIProvider({ children }) {
       });
       return response.data;
     } catch (e) {
-      console.log(e);
       if (e.code === "ERR_NETWORK") throw new NetworkError(e.message, { e });
       if (e.status === 401)
         throw new AuthenticationError("User not Authenticated");
@@ -59,23 +58,18 @@ export default function APIProvider({ children }) {
     pageSize = 10,
     token = "",
   }) {
-    try {
-      const route = `${API_ROUTE}/contacts/all`;
-      const response = await axios.get(route, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          Query: query,
-          Page: page,
-          PageSize: pageSize,
-        },
-      });
-      return response?.data;
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
+    const route = `${API_ROUTE}/contacts/all`;
+    const response = await axios.get(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        Query: query,
+        Page: page,
+        PageSize: pageSize,
+      },
+    });
+    return response?.data;
   },
   []);
   const createContact = useCallback(async function ({ contactUserId, token }) {
@@ -203,6 +197,96 @@ export default function APIProvider({ children }) {
   },
   []);
 
+  const changeName = useCallback(async function ({
+    userName,
+    displayName,
+    themeName,
+    token,
+  }) {
+    let route = `${API_ROUTE}/Users/UpdateMe`;
+    let response = await axios.patch(
+      route,
+      {
+        UserName: userName,
+        DisplayName: displayName,
+        Theme: themeName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+  const changeEmail = useCallback(async function ({
+    newEmail,
+    password,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changeEmail`;
+    let response = await axios.patch(
+      route,
+      {
+        NewEmail: newEmail,
+        Password: password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
+  const changeProfilePic = useCallback(async function ({ image, token }) {
+    let route = `${API_ROUTE}/Users/UpdateProfilePicture`;
+    let formData = new FormData();
+    formData.append("image", image);
+    let response = await axios.patch(route, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }, []);
+
+  const changePassword = useCallback(async function ({
+    oldPassword,
+    newPassword,
+    token,
+  }) {
+    let route = `${API_ROUTE}/accounts/changePassword`;
+    let response = await axios.patch(
+      route,
+      {
+        OldPassword: oldPassword,
+        NewPassword: newPassword,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
+  []);
+
+  const deleteAccount = useCallback(async function ({ token }) {
+    let route = `${API_ROUTE}/users/deleteme`;
+    let response = await axios.delete(route, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }, []);
+
   return (
     <APIContext.Provider
       value={{
@@ -215,6 +299,12 @@ export default function APIProvider({ children }) {
         sendMessageToMany,
         createContact,
         changeContactStatus,
+        changeName,
+        changeProfilePic,
+        changeEmail,
+        changePassword,
+        deleteAccount,
+        API_ROUTE,
       }}
     >
       {children}

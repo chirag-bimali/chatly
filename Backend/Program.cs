@@ -178,6 +178,7 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 //  Assign Access token for the specified hub routes in jwtBearerEvents.
+app.MapHub<UserHub>("hubs/users");
 app.MapHub<ContactHub>("hubs/contacts");
 app.MapHub<MessageHub>("hubs/messages");
 

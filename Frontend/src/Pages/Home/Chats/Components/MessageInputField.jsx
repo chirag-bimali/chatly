@@ -123,14 +123,14 @@ export default function MessageInputField({
     // On click also because when forwarding the content my by empty and it empty form cannot be submitted
     <form onSubmit={(e) => handleSubmit(e)} onClick={(e) => handleSubmit(e)}>
       <div className="px-24 h-fit">
-        <div className="w-full  bg-neutral-100 rounded-xl items-center px-2 py-1 relative">
+        <div className="w-full  bg-base-200 rounded-xl items-center px-2 py-1 relative">
           {/* Reply Message Area */}
           {replyModeOn && (
-            <div className="w-full z-30 bg-slate-600 px-4 py-2 rounded-xl rounded-b-none">
+            <div className="w-full z-30 bg-transparent px-4 py-2 rounded-xl rounded-b-none">
               <div className="mb-2 flex  justify-between items-center">
-                <p className="text-xs text-slate-300">Replying to</p>
+                <p className="text-xs text-base-content opacity-60">Replying to</p>
                 <button
-                  className="btn btn-ghost p-1 w-fit h-fit rounded-full text-slate-300 hover:text-slate-800"
+                  className="btn btn-ghost p-1 w-fit h-fit rounded-full"
                   type="reset"
                   onClick={() => {
                     setReplyModeOn(false);
@@ -140,11 +140,11 @@ export default function MessageInputField({
                   <CloseIcon className="h-6 w-6 " />
                 </button>
               </div>
-              <div className="bg-slate-400 px-4 py-2 rounded-sm border-l-4 rounded-l-none rounded-b-none w-fit">
-                <p className="text-xs text-slate-300 font-medium mb-2">
+              <div className="bg-base-300 px-4 py-2 rounded-sm border-l-4 rounded-l-none rounded-b-none w-fit">
+                <p className="text-xs text-base-content opacity-40 font-medium mb-1">
                   {replyUser.displayName}
                 </p>
-                <p className="text-xs text-slate-800">{replyMessage.content}</p>
+                <p className="text-xs text-base-content opacity-40">{replyMessage.content}</p>
               </div>
             </div>
           )}

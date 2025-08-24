@@ -40,7 +40,7 @@ export default function ChatWindowTitle({ contactUserDetails, chatDetails, setCh
         </div>
       </div>
       <div className="flex gap-4 self-start">
-        <button className="btn shadow-none border-none w-fit h-fit p-2.5 bg-neutral-100 rounded-full">
+        <button className="btn shadow-none border-none w-fit h-fit p-2.5 rounded-full fill-base-content bg-base-300 hover:bg-base-200">
           <Search className="h-5 w-5" />
         </button>
         <div
@@ -61,7 +61,7 @@ export default function ChatWindowTitle({ contactUserDetails, chatDetails, setCh
             }
           }}
         >
-          <button className="btn relative shadow-none border-none w-fit h-fit p-2.5 bg-neutral-100 rounded-full">
+          <button className="btn relative shadow-none border-none w-fit h-fit p-2.5 bg-base-300 fill-base-content hover:bg-base-200 rounded-full">
             <TrippleDots className="h-5 w-5 fill-base-content" />
           </button>
           <ChatTitleContextMenu

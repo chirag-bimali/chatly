@@ -15,7 +15,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 function App() {
   return (
     <AuthProvider>
-      <div className="bg-base max-h-dvh overflow-hidden h-dvh flex flex-col">
+      <div className="bg-base-100 max-h-dvh overflow-hidden h-dvh flex flex-col">
         <Toaster position="bottom-right" />
         <Router>
           <Routes>

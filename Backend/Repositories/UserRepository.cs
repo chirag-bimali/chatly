@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting; // Add this if not present
 using ApplicationException = Chatly.Exceptions.ApplicationException;
 
 namespace Chatly.Repositories;
@@ -21,12 +22,24 @@ public class UserRepository : IUserRepository
     ApplicationDbContext _context;
     readonly UserManager<User> _userManager;
     IConfiguration _configuration;
+    private readonly string _basePath;
+    private readonly string? folderPath;
 
-    public UserRepository(ApplicationDbContext context, UserManager<User> userManager, IConfiguration configuration)
+    public UserRepository(ApplicationDbContext context, UserManager<User> userManager, IConfiguration configuration, IHostEnvironment env)
     {
         _context = context;
         _userManager = userManager;
         _configuration = configuration;
+        _basePath = env.ContentRootPath;
+
+        var temp = _configuration["Storage:UserProfilePicturesPath"];
+        if (temp == null)
+        {
+            throw new Exception("Unable to resolve User Profile Pictures Storage Path");
+        }
+        folderPath = temp;
+
+        folderPath = Path.Combine(_basePath, folderPath.TrimStart('\\').TrimStart('/'));
     }
 
     public async Task<User> GetUserAsync(string? userId = null, string? username = null)
@@ -45,13 +58,14 @@ public class UserRepository : IUserRepository
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) throw new ApplicationArgumentException("User does not exist", nameof(userId));
 
-        var folderPath = _configuration["Storage:UserProfilePicturesPath"];
-        if (folderPath == null)
+
+
+        if (!Directory.Exists(folderPath))
         {
-            throw new Exception("Unable to resolve User Profile Pictures Storage Path");
+            throw new ApplicationException("Profile picture path does not exist");
         }
 
-
+        var userFolder = Path.Combine(folderPath, userId);
         var file = Directory
             .GetFiles(folderPath) // gets full paths
             .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == userId);
@@ -59,7 +73,7 @@ public class UserRepository : IUserRepository
         if (string.IsNullOrEmpty(file))
         {
             throw new NotFoundException("Profile picture not found",
-                $"Profile Picture doesnot exits in the server for user: {userId}");
+                $"Profile Picture doesn't exist in the server for user: {userId}");
         }
 
         var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
@@ -84,15 +98,14 @@ public class UserRepository : IUserRepository
         if (user == null) throw new ApplicationArgumentException("User does not exist", nameof(userId));
 
 
-        var profilePictureDirectory = _configuration["Storage:UserProfilePicturesPath"];
-        if (!Directory.Exists(profilePictureDirectory))
+        if (!Directory.Exists(folderPath))
         {
             throw new ApplicationException("Profile picture path does not exist");
         }
 
         // Check if user already has a profile picture with any extension
         var existingFile = Directory
-            .GetFiles(profilePictureDirectory)
+            .GetFiles(folderPath)
             .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == user.Id);
 
         // Delete existing profile picture if found
@@ -101,7 +114,7 @@ public class UserRepository : IUserRepository
             File.Delete(existingFile);
         }
 
-        var imagePath = Path.Combine(profilePictureDirectory, user.Id) + extension;
+        var imagePath = Path.Combine(folderPath, user.Id) + extension;
 
         using (var stream = new FileStream(imagePath, FileMode.Create))
         {
@@ -173,7 +186,7 @@ public class UserRepository : IUserRepository
         await _context.Contacts.Where(u => u.ContactId == user.Id || u.UserId == user.Id)
             .ExecuteDeleteAsync();
         // Every messages are deleted via relationships
-        
+
         //  2. Delete User
         await _userManager.DeleteAsync(user);
         return true;

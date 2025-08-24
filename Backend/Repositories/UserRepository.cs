@@ -180,8 +180,9 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<User> UpdateUserAsync(string? userId = null, string? username = null, string? displayName = null,
-        string? theme = null)
+        string? theme = null, bool? isOnline = null, DateTime? lastSeen = null)
     {
+        if (string.IsNullOrEmpty(userId)) throw new ApplicationArgumentException("The user could not be found", nameof(userId));
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) throw new ApplicationArgumentException("The user could not be found", nameof(userId));
         if (!string.IsNullOrEmpty(displayName))
@@ -202,6 +203,18 @@ public class UserRepository : IUserRepository
         if (!string.IsNullOrEmpty(username))
         {
             user.UserName = username;
+        }
+
+        if (isOnline is true)
+        {
+            user.IsOnline = true;
+            user.LastSeen = null;
+        }
+
+        if (lastSeen.HasValue)
+        {
+            user.IsOnline = false;
+            user.LastSeen = lastSeen;
         }
 
         _context.Users.Update(user);

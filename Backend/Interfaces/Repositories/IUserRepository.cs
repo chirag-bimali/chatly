@@ -15,6 +15,8 @@ public interface IUserRepository
         string? userId = null,
         string? username = null,
         string? displayName = null,
-        string? theme = null
+        string? theme = null,
+        bool? isOnline = null,
+        DateTime? lastSeen = null
     );
 }

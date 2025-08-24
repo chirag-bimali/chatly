@@ -94,7 +94,7 @@ export default function Contact({
             />
           </div>
           <div className="flex-grow">
-            <div className="prose prose-p:text-base prose-p:text-neutral-950 dark:prose-p:text-neutral-50 prose-p:text-left">
+            <div className="prose prose-p:text-base prose-p:text-base-content prose-p:text-left">
               <p>{contactName ? contactName : "Nobiee Nobiee"}</p>
             </div>
             <div className="prose prose-p:text-sm prose-p:text-neutral-500 prose-p:text-left">

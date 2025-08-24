@@ -8,13 +8,13 @@ export default function ChatTitleContextMenuOption({
   return (
     <li
       className={
-        "hover:bg-gray-100 cursor-pointer flex items-center pr-6 " +
+        "hover:bg-base-200 cursor-pointer flex items-center pr-6 bg-base-100 " +
         (disabled ? " opacity-50 cursor-not-allowed" : "")
       }
       disabled={disabled}
       onClick={disabled ? null : onClick}
     >
-      <span className="px-4 py-3 flex items-center justify-center">
+      <span className="px-4 py-3 flex items-center justify-center fill-base-content">
         {<Icon className="h-4 w-4" />}
       </span>
       <p>{label}</p>

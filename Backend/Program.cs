@@ -91,6 +91,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)));
 
+builder.Services.AddSingleton<RedisService>();
+builder.Services.AddScoped<PresenceTracker>();
+
+var redis = new RedisService(builder.Configuration);
+
+
 builder.Services.AddScoped<IPasswordFormatValidator, PasswordFormatValidator>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -178,6 +184,7 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 //  Assign Access token for the specified hub routes in jwtBearerEvents.
+app.MapHub<UserHub>("hubs/users");
 app.MapHub<ContactHub>("hubs/contacts");
 app.MapHub<MessageHub>("hubs/messages");
 

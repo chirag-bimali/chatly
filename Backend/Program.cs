@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using StackExchange.Redis;
+using System.Reflection.Metadata.Ecma335;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,19 +95,43 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)));
 
-builder.Services.AddSingleton<RedisService>();
-builder.Services.AddScoped<PresenceTracker>();
+// SETUP REDIS SERVER
 
-var redis = new RedisService(builder.Configuration);
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+
+if (string.IsNullOrEmpty(redisConnectionString))
+{
+    throw new Exception("Redis connection string is required.");
+}
+;
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+    if (redis.IsConnected)
+        Console.WriteLine("Connected to Redis server.");
+    else
+        throw new Exception("Failed to connect to Redis server.");
+
+    return redis;
+});
+
+
 
 
 builder.Services.AddScoped<IPasswordFormatValidator, PasswordFormatValidator>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+// REPOSITORIES
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
+// REDIS REPOSITORIES
+builder.Services.AddScoped<IPresenceRepository, PresenceRepository>();
+
 builder.Services.AddSignalR();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -118,6 +144,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// USER PROFILE PICTURE STORAGE SETUP
 var userProfilePathRelative = builder.Configuration["Storage:UserProfilePicturesPath"];
 Console.WriteLine($"userProfilePathRelative: {userProfilePathRelative}");
 if (string.IsNullOrEmpty(userProfilePathRelative))
@@ -133,6 +160,8 @@ if (!Directory.Exists(userProfilePath))
     Directory.CreateDirectory(userProfilePath);
 }
 
+
+// BUILD APP
 var app = builder.Build();
 
 // Ensure database is created and migrations are applied

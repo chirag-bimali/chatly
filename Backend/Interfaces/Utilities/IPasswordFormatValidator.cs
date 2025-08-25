@@ -1,4 +1,4 @@
-namespace Chatly.Interfaces.Services;
+namespace Chatly.Interfaces.Utilities;
 
 public interface IPasswordFormatValidator
 {

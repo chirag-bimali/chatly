@@ -1,10 +1,10 @@
-using Chatly.Interfaces.Services;
 
-namespace Chatly.Services;
+namespace Chatly.Utilities;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Chatly.Interfaces.Utilities;
 
 public class PasswordFormatValidator : IPasswordFormatValidator
 {

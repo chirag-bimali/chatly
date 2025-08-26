@@ -32,14 +32,13 @@ public class UserRepository : IUserRepository
         _configuration = configuration;
         _basePath = env.ContentRootPath;
 
-        var temp = _configuration["Storage:UserProfilePicturesPath"];
-        if (temp == null)
+        folderPath = _configuration["Storage:UserProfilePicturesPath"];
+        if (folderPath == null)
         {
             throw new Exception("Unable to resolve User Profile Pictures Storage Path");
         }
-        folderPath = temp;
 
-        folderPath = Path.Combine(_basePath, folderPath.TrimStart('\\').TrimStart('/'));
+        // folderPath = Path.Combine(_basePath, folderPath.TrimStart('\\').TrimStart('/'));
     }
 
     public async Task<User> GetUserAsync(string? userId = null, string? username = null)
@@ -60,12 +59,16 @@ public class UserRepository : IUserRepository
 
 
 
+        Console.WriteLine(folderPath);
+
+
         if (!Directory.Exists(folderPath))
         {
             throw new ApplicationException("Profile picture path does not exist");
         }
 
         var userFolder = Path.Combine(folderPath, userId);
+
         var file = Directory
             .GetFiles(folderPath) // gets full paths
             .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == userId);
@@ -84,6 +87,7 @@ public class UserRepository : IUserRepository
     {
         if (image == null) throw new ApplicationArgumentException("Image is null", nameof(image));
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+        Console.WriteLine(folderPath);
         var extension = Path.GetExtension(image.FileName);
         if (!allowedExtensions.Contains(extension.ToLower()))
         {

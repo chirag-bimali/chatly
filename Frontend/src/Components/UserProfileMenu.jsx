@@ -37,7 +37,7 @@ export default function UserProfileMenu({ contextMenu }) {
   console.log(contextMenu);
   return (
     <div
-      className="fixed bg-neutral-200 rounded shadow-md z-50"
+      className="fixed rounded shadow-md z-50"
       id="context-menu"
       style={{
         left: posX,

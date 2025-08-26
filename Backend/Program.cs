@@ -97,7 +97,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // SETUP REDIS SERVER
 
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
 
 if (string.IsNullOrEmpty(redisConnectionString))
 {
@@ -115,7 +115,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 
     return redis;
 });
-
 
 
 
@@ -154,7 +153,7 @@ if (string.IsNullOrEmpty(userProfilePathRelative))
 
 var userProfilePath = builder.Configuration["Storage:UserProfilePicturesPath"];
 if (string.IsNullOrEmpty(userProfilePath)) throw new Exception($"Profile Picture Path is missing.");
-
+Console.WriteLine($"userProfilePath: {userProfilePath}");
 if (!Directory.Exists(userProfilePath))
 {
     Directory.CreateDirectory(userProfilePath);

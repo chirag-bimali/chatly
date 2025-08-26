@@ -91,8 +91,32 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)));
 
+<<<<<<< Updated upstream
 builder.Services.AddSingleton<RedisService>();
 builder.Services.AddScoped<PresenceTracker>();
+=======
+// SETUP REDIS SERVER
+
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+
+if (string.IsNullOrEmpty(redisConnectionString))
+{
+    throw new Exception("Redis connection string is required.");
+}
+;
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+    if (redis.IsConnected)
+        Console.WriteLine("Connected to Redis server.");
+    else
+        throw new Exception("Failed to connect to Redis server.");
+
+    return redis;
+});
+
+>>>>>>> Stashed changes
 
 var redis = new RedisService(builder.Configuration);
 
@@ -125,7 +149,7 @@ if (string.IsNullOrEmpty(userProfilePathRelative))
 
 var userProfilePath = builder.Configuration["Storage:UserProfilePicturesPath"];
 if (string.IsNullOrEmpty(userProfilePath)) throw new Exception($"Profile Picture Path is missing.");
-
+Console.WriteLine($"userProfilePath: {userProfilePath}");
 if (!Directory.Exists(userProfilePath))
 {
     Directory.CreateDirectory(userProfilePath);

@@ -3,8 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
 # WORKDIR /app
 
 
-# FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-# ARG BUILD_CONFIGURATION=Release
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
 
 
 # Load Dependencies
@@ -15,14 +15,13 @@ RUN dotnet restore ./Chatly.csproj
 # Load Source Code
 COPY . .
 
-# # Build Source Code
-# RUN dotnet publish ./Chatly.csproj -c Release -o /app/publish
+# Build Source Code
+RUN dotnet publish ./Chatly.csproj -c Release -o /app/publish
 
 
 
-# FROM base AS final
-# WORKDIR /app
-# COPY --from=build /app/publish .
-# ENTRYPOINT ["dotnet",  "Chatly.dll"]
+FROM base AS final
 EXPOSE 5280
-ENTRYPOINT ["dotnet", "watch", "run"]
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet",  "Chatly.dll"]

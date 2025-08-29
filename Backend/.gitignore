@@ -65,6 +65,7 @@ secrets.json
 # Environment configs
 .env
 .env.*
+heroku.env
 
 # Test results
 TestResults/

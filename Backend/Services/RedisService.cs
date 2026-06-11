@@ -9,7 +9,7 @@ public class RedisService
 
     public RedisService(IConfiguration config)
     {
-        var connectionString = config.GetConnectionString("Redis") ?? "localhost";
+        var connectionString = config.GetConnectionString("RedisConnection") ?? "localhost";
         _redis = ConnectionMultiplexer.Connect(connectionString);
         if (_redis.IsConnected)
         {

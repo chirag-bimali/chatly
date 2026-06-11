@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,16 +86,14 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions => sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)));
 
-<<<<<<< Updated upstream
 builder.Services.AddSingleton<RedisService>();
 builder.Services.AddScoped<PresenceTracker>();
-=======
 // SETUP REDIS SERVER
 
 var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
@@ -116,7 +115,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
     return redis;
 });
 
->>>>>>> Stashed changes
 
 var redis = new RedisService(builder.Configuration);
 
@@ -162,27 +160,27 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         logger.LogInformation("Waiting for database to be ready...");
-        
+
         // Wait for SQL Server to be ready with retries
         var maxAttempts = 10;
         var delay = TimeSpan.FromSeconds(5);
-        
+
         for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
             try
             {
                 logger.LogInformation($"Database connection attempt {attempt}/{maxAttempts}");
-                
+
                 // Test connection first
                 await context.Database.CanConnectAsync();
-                
+
                 // Create database if it doesn't exist
                 await context.Database.EnsureCreatedAsync();
-                
+
                 logger.LogInformation("Database is ready and created successfully.");
                 break;
             }

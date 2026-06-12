@@ -27,11 +27,16 @@ export default function ForwardMessageUser({ contact }) {
     <label className="label flex justify-between items-start">
       <div className="flex gap-4">
         <div className="h-6 w-6">
-          <ProfileImage userId={contactUserDetails?.id} className={"w-full h-full"} />
+          <ProfileImage
+            userId={contactUserDetails?.id}
+            className={"w-full h-full"}
+          />
         </div>
-        <div className="flex-grow">
-          <div className="prose prose-p:text-base prose-p:text-neutral-950 dark:prose-p:text-neutral-50 prose-p:text-left">
-            <p>{contactUserDetails.displayName}</p>
+        <div className="grow">
+          <div className="">
+            <p className="text-base-content text-sm font-medium">
+              {contactUserDetails.displayName}
+            </p>
           </div>
         </div>
       </div>
